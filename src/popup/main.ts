@@ -1,8 +1,14 @@
-import { createApp } from 'vue'
-import App from './Popup.vue'
-import { setupApp } from '~/logic/common-setup'
-import '../styles'
+import { sendMessage } from 'webext-bridge/popup'
 
-const app = createApp(App)
-setupApp(app)
-app.mount('#app')
+async function activateContentScript() {
+  let tabs = await browser.tabs.query({
+    active: true,
+    currentWindow: true
+  });
+  console.log('START EXTENSION');
+  const activeTabId = tabs[0]?.id || 0;
+  await sendMessage('activate-extension-event', { activate: true }, { context: 'content-script', tabId: activeTabId }); // send to content script
+  await sendMessage('activate-extension-event', { activate: true, tabId: activeTabId }, "background"); // send to background script
+}
+
+activateContentScript();
