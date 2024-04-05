@@ -8,40 +8,57 @@ import { onMessage, sendMessage } from 'webext-bridge/content-script'
 
 const [show, togglePopup] = useToggle(true);
 
-
-const hidePopup = ref<boolean>(false);
+const hidePopup = ref<boolean>(true);
 
 const details = ref<any>(null);
 
-onMessage('messageeeeee-from--background', (response) => {
-  
+onMessage('event-retry', async(response) => {
+  const initPayload = { location: window.location.href };
+  const res = await sendMessage('get-copy-data', initPayload, "background");
+  console.log('RES event-retry', res)
+  togglePopup();
 })
 
-
-onMounted(() => {
-  function getSelectionText() {
-    let text = "";
-    if (window.getSelection) {
-      text = window.getSelection().toString();
-    } else if (document.selection && document.selection.type != "Control") {
-      text = document.selection.createRange().text;
-    }
-    return text;
+function getSelectionText() {
+  let text = "";
+  if (window.getSelection) {
+    text = window.getSelection()?.toString() || '';
   }
-  document.addEventListener("copy", async (e) => {
-    
-    console.log('COPY>>>>>>>', getSelectionText())
-  });
-  
-})
+  return text;
+}
 
+const handlerCopyText = async(e: any) => {
+  try {
+    const copyText = getSelectionText();
+    const payload = { copy: copyText, location: window.location.href };
+    await sendMessage('save-copy-data', payload, "background");
+    console.log('COPY>>>>>>>', payload);
+  } catch (error: any) {
+    console.log(error?.message);
+  }
+}
+
+onMounted(async() => {
+  document.addEventListener("copy", handlerCopyText);
+  const initPayload = { location: window.location.href };
+  console.log('INIT>>>', initPayload);
+  const res = await sendMessage('get-init-copy-data', initPayload, "background");
+  console.log('RES>>>',res) ;
+})
 
 function hidePopupToButton() {
   hidePopup.value = true;
 }
 
-function openPopupButton() {
-  hidePopup.value = false;
+async function openPopupButton() {
+  try {
+    const initPayload = { location: window.location.href };
+    const res = await sendMessage('get-copy-data', initPayload, "background");
+    console.log('openPopupButton >> response', res)
+    hidePopup.value = false;
+  } catch (error: any) {
+    console.log(error?.message);
+  }
 }
 
 </script>

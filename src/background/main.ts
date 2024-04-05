@@ -1,5 +1,4 @@
 import { onMessage, sendMessage } from 'webext-bridge/background'
-import type { Tabs } from 'webextension-polyfill'
 
 // only on dev mode
 if (import.meta.hot) {
@@ -9,50 +8,65 @@ if (import.meta.hot) {
   import('./contentScriptHMR')
 }
 
+
 browser.runtime.onInstalled.addListener((): void => {
   // eslint-disable-next-line no-console
   console.log('Extension installed')
 })
 
-let previousTabId = 0
+let currentActiveTabId = 0
 
-// communication example: send previous tab title from background page
-// see shim.d.ts for type declaration
-browser.tabs.onActivated.addListener(async ({ tabId }) => {
-  if (!previousTabId) {
-    previousTabId = tabId
-    return
-  }
+browser.tabs.onActivated.addListener(async () => {
+ try {
+   console.log('activated new tab')
 
-  let tab: Tabs.Tab
+   let tabs = await browser?.tabs?.query({
+     active: true,
+     currentWindow: true
+   });
 
-  try {
-    tab = await browser.tabs.get(previousTabId)
-    previousTabId = tabId
-  }
-  catch {
-    return
-  }
-
-  // eslint-disable-next-line no-console
-  console.log('previous tab', tab)
-  sendMessage('tab-prev', { title: tab.title }, { context: 'content-script', tabId })
+   const activeTabId = tabs[0]?.id || 0;
+   currentActiveTabId = activeTabId;
+   await sendMessage('activated-new-tab', { tab: activeTabId }, { context: 'content-script', tabId: activeTabId })
+ } catch (error: any) {
+   console.log('ERROR:', error?.message);
+ }
 })
 
-onMessage('get-current-tab', async () => {
+browser.tabs.onUpdated.addListener(async () => {
+ try {
+   console.log('activated new tab', currentActiveTabId)
+   await sendMessage('activated-new-tab', { tab: currentActiveTabId }, { context: 'content-script', tabId: currentActiveTabId })
+ } catch (error: any) {
+   console.log('ERROR:', error?.message);
+ }
+})
+
+onMessage('get-init-copy-data', (message) => {
+  console.log('get-init-copy-data', message)
+  return []
+})
+
+onMessage('save-copy-data', (message) => {
+  const { data, sender } = message
+  console.log('save-copy-data', data, sender)
+})
+
+onMessage('retry-init', async(message) => {
   try {
-    const tab = await browser.tabs.get(previousTabId)
-    return {
-      title: tab?.title,
-    }
-  }
-  catch {
-    return {
-      title: undefined,
-    }
+    let tabs = await browser?.tabs?.query({
+      active: true,
+      currentWindow: true
+    });
+    console.log('START EXTENSION');
+    const activeTabId = tabs[0]?.id || 0;
+    await sendMessage('event-retry', { tab: activeTabId }, { context: 'content-script', tabId: activeTabId })
+  } catch (error: any) {
+    console.log('ERROR:', error?.message)
   }
 })
 
-onMessage('activate-extension-event', (data) => {
-  console.log('EVENT FROM POPUP > CONTENT_SCRIPT ACTIVATED', data)
+onMessage('get-copy-data', (message) => {
+  console.log('get-copy-data', message)
+  return []
 })

@@ -1,20 +1,27 @@
 /* eslint-disable no-console */
-import { onMessage } from 'webext-bridge/content-script'
+import { onMessage, sendMessage } from 'webext-bridge/content-script'
 import { createApp } from 'vue'
 import App from './views/App.vue'
 import { setupApp } from '~/logic/common-setup'
 
 // Firefox `browser.tabs.executeScript()` requires scripts return a primitive value
-(() => {
-  console.info('[vitesse-webext] Hello world from content script')
+let init = false;
 
-  // communication example: send previous tab title from background page
-  onMessage('tab-prev', ({ data }) => {
-    console.log(`[vitesse-webext] Navigate from page "${data.title}"`)
+(() => {
+  onMessage('activated-new-tab', async() => {
+    console.log('ACTIVATE EXTENSION 1')
+    if (init) {
+      return;
+    }
+    mountContentPopup();
   })
 
-  onMessage('activate-extension-event', (data) => {
-    console.log('ACTIVATE EXTENSION', data)
+  onMessage('activate-extension-event', async() => {
+    console.log('ACTIVATE EXTENSION 2')
+    if (init) {
+      await sendMessage('retry-init', {}, "background");
+      return;
+    }
     mountContentPopup();
   })
 })()
@@ -22,7 +29,7 @@ import { setupApp } from '~/logic/common-setup'
 
 function mountContentPopup() {
   const container = document.createElement('div')
-  container.id = __NAME__
+  container.id = `${__NAME__ + Date.now()}`
   const root = document.createElement('div')
   const styleEl = document.createElement('link')
   const shadowDOM = container.attachShadow?.({ mode: __DEV__ ? 'open' : 'closed' }) || container
@@ -33,5 +40,6 @@ function mountContentPopup() {
   document.body.appendChild(container)
   const app = createApp(App)
   setupApp(app)
-  app.mount(root)
+  app.mount(root);
+  init = true;
 }
