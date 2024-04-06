@@ -2,20 +2,31 @@
 import { useToggle } from '@vueuse/core'
 import 'uno.css'
 import { ref, onMounted, reactive } from 'vue'
-
-
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
+
+const LIMIT_STORAGE = 10485760;
+
+interface ICopyItem { copy: string, location: string, created_at: string };
+interface ISaveResponseData { size: string, data: ICopyItem }
+interface IInitResponseData { size: string, data: ICopyItem[] }
 
 const [show, togglePopup] = useToggle(true);
 
 const hidePopup = ref<boolean>(true);
 
-const details = ref<any>(null);
+const details = ref<null | ICopyItem[] >(null);
+
+const sizeStorage = ref<number>(0);
 
 onMessage('event-retry', async(response) => {
   const initPayload = { location: window.location.href };
   const res = await sendMessage('get-copy-data', initPayload, "background");
-  console.log('RES event-retry', res)
+ 
+  if (res) {
+    details.value = (res as any as IInitResponseData).data;
+    sizeStorage.value = Number((res as any as IInitResponseData).size);
+    console.log('INIT event-retry', res)
+  }
   togglePopup();
 })
 
@@ -31,8 +42,12 @@ const handlerCopyText = async(e: any) => {
   try {
     const copyText = getSelectionText();
     const payload = { copy: copyText, location: window.location.href };
-    await sendMessage('save-copy-data', payload, "background");
-    console.log('COPY>>>>>>>', payload);
+    const res = await sendMessage('save-copy-data', payload, "background");
+    if (show && details.value) {
+      details.value.push((res as any as ISaveResponseData).data)
+      sizeStorage.value = Number((res as any as ISaveResponseData).size);
+    }
+    console.log('COPY>>>>>>>', res);
   } catch (error: any) {
     console.log(error?.message);
   }
@@ -40,10 +55,15 @@ const handlerCopyText = async(e: any) => {
 
 onMounted(async() => {
   document.addEventListener("copy", handlerCopyText);
+  
   const initPayload = { location: window.location.href };
-  console.log('INIT>>>', initPayload);
   const res = await sendMessage('get-init-copy-data', initPayload, "background");
-  console.log('RES>>>',res) ;
+  
+  if(res) {
+    details.value = (res as any as IInitResponseData).data;
+    sizeStorage.value = Number((res as any as IInitResponseData).size);
+    console.log('INIT Details')
+  }
 })
 
 function hidePopupToButton() {
@@ -54,7 +74,12 @@ async function openPopupButton() {
   try {
     const initPayload = { location: window.location.href };
     const res = await sendMessage('get-copy-data', initPayload, "background");
-    console.log('openPopupButton >> response', res)
+   
+    if (res) {
+      details.value = (res as any as IInitResponseData).data;
+      sizeStorage.value = Number((res as any as IInitResponseData).size);
+      console.log('INIT Details openPopup>>', res)
+    }
     hidePopup.value = false;
   } catch (error: any) {
     console.log(error?.message);

@@ -1,5 +1,7 @@
 import { onMessage, sendMessage } from 'webext-bridge/background'
 
+import { storageCopy } from '~/logic/storage'
+
 // only on dev mode
 if (import.meta.hot) {
   // @ts-expect-error for background HMR
@@ -44,12 +46,40 @@ browser.tabs.onUpdated.addListener(async () => {
 
 onMessage('get-init-copy-data', (message) => {
   console.log('get-init-copy-data', message)
-  return []
+  const data = storageCopy.value;
+  const usedSize = getStringMemorySize(JSON.stringify(data));
+  
+  return {
+    data,
+    size: usedSize,
+  }
 })
 
-onMessage('save-copy-data', (message) => {
-  const { data, sender } = message
-  console.log('save-copy-data', data, sender)
+onMessage('save-copy-data', async(message) => {
+  const { data, sender } = message;
+  const saveArray: any[] = [...storageCopy.value];
+ 
+  const dateOptions: any = {
+    year: "numeric",
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    hour12: false,
+    hour: "numeric", 
+    minute: "numeric"
+  };
+  const newData = {
+    ...data as any,
+    created_at: new Date().toLocaleString("en-US", dateOptions),
+  }
+  saveArray.push(newData);
+  (storageCopy.value as any) = saveArray;
+  const usedSize = getStringMemorySize(JSON.stringify(saveArray));
+  console.log('save-copy-data', newData,'usedSize>>>>', usedSize)
+  return {
+    data: newData,
+    size: usedSize,
+  }
 })
 
 onMessage('retry-init', async(message) => {
@@ -68,5 +98,15 @@ onMessage('retry-init', async(message) => {
 
 onMessage('get-copy-data', (message) => {
   console.log('get-copy-data', message)
-  return []
+  const data = storageCopy.value;
+  const usedSize = getStringMemorySize(JSON.stringify(data));
+
+  return {
+    data,
+    size: usedSize,
+  }
 })
+
+function getStringMemorySize(s: string) {
+  return new Blob([s]).size;
+}
