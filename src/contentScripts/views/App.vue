@@ -44,7 +44,7 @@ const handlerCopyText = async(e: any) => {
     const copyText = getSelectionText();
     const payload = { value: copyText, location: window.location.href };
     const res = await sendMessage('save-copy-data', payload, "background");
-    if (show && details.value) {
+    if (show) {
       details.value = [...(res as any as ISaveResponseData).data]
       sizeStorage.value = Number((res as any as ISaveResponseData).size);
     }
@@ -71,6 +71,15 @@ function hidePopupToButton() {
   hidePopup.value = true;
 }
 
+async function handlerDeleteListItem(item: any) {
+  console.log('DELETE ITEM>>',item)
+  const res = await sendMessage('delete-item', item, "background");
+  if(res) {
+    details.value = [...(res as any as ISaveResponseData).data]
+    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+  } 
+}
+
 async function openPopupButton() {
   try {
     const initPayload = { location: window.location.href };
@@ -93,7 +102,7 @@ async function openPopupButton() {
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
     <!-- POPUP -->
     <PopupContent :detailsItems="details" :hidePopup="hidePopup" :show="show" @close="togglePopup()"
-      @hide-popup-to-button="hidePopupToButton" />
+      @hide-popup-to-button="hidePopupToButton" @delete-item-action="handlerDeleteListItem" />
 
     <!-- BUTTON HIDE POPUP -->
     <button v-if="hidePopup" class="open-button flex w-10 h-10 rounded-full shadow cursor-pointer border-none"

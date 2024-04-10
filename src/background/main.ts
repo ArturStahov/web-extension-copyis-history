@@ -66,7 +66,6 @@ onMessage('save-copy-data', async(message) => {
     hour: "numeric",
     minute: "numeric"
   };
- 
   const keyOptions: any = {
     year: "numeric",
     weekday: "long",
@@ -98,7 +97,6 @@ onMessage('save-copy-data', async(message) => {
     parentItem.items.push(newDataItem);
     saveArray.splice(parentIdx, 1, parentItem);
   }
-
   
   (storageCopy.value as any) = saveArray;
   const usedSize = getStringMemorySize(JSON.stringify(saveArray));
@@ -106,6 +104,35 @@ onMessage('save-copy-data', async(message) => {
   return {
     data: saveArray,
     size: usedSize,
+  }
+})
+
+
+onMessage('delete-item', (message: any) => {
+  const { data } = message;
+  console.log('delete-item', data)
+
+  const saveData = [...storageCopy.value];
+  const parentIdx = saveData.findIndex((parent: any) => parent.key === data?.key);
+  const parentItem = saveData[parentIdx] as any;
+  
+  if(parentItem) { 
+    const deleteIdx = parentItem.items?.findIndex((el: any)=> el.id === data.id);
+    parentItem.items.splice(deleteIdx, 1);
+
+    if (parentItem.items.length === 0) {
+      saveData.splice(parentIdx, 1)
+    }
+
+    storageCopy.value = saveData;
+    const usedSize = getStringMemorySize(JSON.stringify(saveData));
+
+    return {
+      data: saveData,
+      size: usedSize,
+    }
+  } else {
+    console.log('ERROR: delete-item Not-found parent')
   }
 })
 

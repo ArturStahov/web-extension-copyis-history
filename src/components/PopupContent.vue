@@ -4,7 +4,7 @@ import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
 
 const emit = defineEmits<{
   (e: 'close',): void,
-  (e: 'get-font-details',): void,
+  (e: 'delete-item-action', item: any): void,
   (e: 'hide-popup-to-button',): void
 }>();
 
@@ -36,6 +36,13 @@ async function copyValue(value: string) {
   }
 }
 
+function handlerItemAction(action: {action: string, item: any}) {
+  if(action.action === 'delete') {
+    emit('delete-item-action',action.item);
+    return;
+  }
+}
+
 
 onMounted(() => {
 })
@@ -53,23 +60,8 @@ onMounted(() => {
       <div v-for="parent in detailsItems" :key="parent.id" class="details-block">
         <h2 class="details-block__title text"> {{ parent.key }}</h2>
         <ul class="details-block-list">
-          <li v-for="item in parent.items" :key="item.id" class="details-block-list__item">
-            <span class="text details-block-list__item-text">
-              {{ item.value }}
-            </span>
-            <span class="text details-block-list__item-time">
-              {{ item.time }}
-            </span>
-            <ButtonComponent data-type="delete" @click="()=>{}">
-              <div class="i-majesticons:delete-bin w-24px h-24px" style="color: #0d9488;"></div>
-            </ButtonComponent>
-            <ButtonComponent data-type="edit" @click="() => { }">
-              <div class="i-mdi:file-edit w-24px h-24px" style="color: #0d9488;"></div>
-            </ButtonComponent>
-            <ButtonComponent data-type="copy" @click="() => { }">
-              <div class="i-fluent:copy-20-filled w-24px h-24px" style="color: #0d9488;"></div>
-            </ButtonComponent>
-          </li>
+          <PopupContentListItem v-for="item in parent.items" :key="item.id" :item="item"
+            @details-list-action="handlerItemAction" />
         </ul>
       </div>
 
