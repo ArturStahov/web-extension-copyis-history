@@ -6,15 +6,16 @@ import { onMessage, sendMessage } from 'webext-bridge/content-script'
 
 const LIMIT_STORAGE = 10485760;
 
-interface ICopyItem { copy: string, location: string, created_at: string };
-interface ISaveResponseData { size: string, data: ICopyItem }
-interface IInitResponseData { size: string, data: ICopyItem[] }
+interface ICopyItem { value: string, location: string, time: string, key: string, id: string };
+interface IDataItem { key: string, items: ICopyItem[], id: string}
+interface ISaveResponseData { size: string, data: IDataItem[] }
+interface IInitResponseData { size: string, data: IDataItem[] }
 
 const [show, togglePopup] = useToggle(true);
 
 const hidePopup = ref<boolean>(true);
 
-const details = ref<null | ICopyItem[] >(null);
+const details = ref<null | IDataItem[] >(null);
 
 const sizeStorage = ref<number>(0);
 
@@ -41,10 +42,10 @@ function getSelectionText() {
 const handlerCopyText = async(e: any) => {
   try {
     const copyText = getSelectionText();
-    const payload = { copy: copyText, location: window.location.href };
+    const payload = { value: copyText, location: window.location.href };
     const res = await sendMessage('save-copy-data', payload, "background");
     if (show && details.value) {
-      details.value.push((res as any as ISaveResponseData).data)
+      details.value = [...(res as any as ISaveResponseData).data]
       sizeStorage.value = Number((res as any as ISaveResponseData).size);
     }
     console.log('COPY>>>>>>>', res);

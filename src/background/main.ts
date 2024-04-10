@@ -1,6 +1,8 @@
 import { onMessage, sendMessage } from 'webext-bridge/background'
+import uniqid from 'uniqid';
 
 import { storageCopy } from '~/logic/storage'
+
 
 // only on dev mode
 if (import.meta.hot) {
@@ -56,28 +58,53 @@ onMessage('get-init-copy-data', (message) => {
 })
 
 onMessage('save-copy-data', async(message) => {
-  const { data, sender } = message;
+  const { data } = message;
   const saveArray: any[] = [...storageCopy.value];
+
+  const timeOptions: any = {
+    hour12: false,
+    hour: "numeric",
+    minute: "numeric"
+  };
  
-  const dateOptions: any = {
+  const keyOptions: any = {
     year: "numeric",
     weekday: "long",
     month: "long",
     day: "numeric",
-    hour12: false,
-    hour: "numeric", 
-    minute: "numeric"
   };
-  const newData = {
+
+  const key = new Date().toLocaleString("en-US", keyOptions);
+  const time = new Date().toLocaleString("en-US", timeOptions);
+
+  const newDataItem = {
     ...data as any,
-    created_at: new Date().toLocaleString("en-US", dateOptions),
+    key,
+    time,
+    id: uniqid(),
   }
-  saveArray.push(newData);
+
+  const parentIdx = saveArray.findIndex(parentItem => parentItem.key === key);
+
+  if (parentIdx === -1) {
+    const parent = {
+      key,
+      items:[newDataItem],
+      id: `${uniqid()}-${Date.now()}`,
+    }
+    saveArray.push(parent);
+  } else {
+    const parentItem = saveArray[parentIdx];
+    parentItem.items.push(newDataItem);
+    saveArray.splice(parentIdx, 1, parentItem);
+  }
+
+  
   (storageCopy.value as any) = saveArray;
   const usedSize = getStringMemorySize(JSON.stringify(saveArray));
-  console.log('save-copy-data', newData,'usedSize>>>>', usedSize)
+  console.log('save-copy-data', newDataItem,'usedSize>>>>', usedSize)
   return {
-    data: newData,
+    data: saveArray,
     size: usedSize,
   }
 })

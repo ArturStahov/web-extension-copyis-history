@@ -50,6 +50,16 @@ onMounted(() => {
     <!-- MAIN SCREEN -->
     <div v-if="detailsItems && detailsItems.length" class="popup-main">
 
+      <div v-for="parent in detailsItems" :key="parent.id" class="details-block">
+        <h2 class="details-block__title text"> {{ parent.key }}</h2>
+        <ul class="details-block-list">
+          <li v-for="item in parent.items" :key="item.id" class="details-block-list__item">
+            <span class="text">
+              {{ item.value }}
+            </span>
+          </li>
+        </ul>
+      </div>
 
     </div>
 
