@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import 'uno.css'
 import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
+import { action } from 'webextension-polyfill';
 
 const emit = defineEmits<{
   (e: 'close',): void,
@@ -36,11 +37,13 @@ async function copyValue(value: string) {
   }
 }
 
-function handlerItemAction(action: {action: string, item: any}) {
-  if(action.action === 'delete') {
-    emit('delete-item-action',action.item);
-    return;
+function handlerItemAction(event: {action: string, item: any}) {
+  const actions: {[key:string]: ()=> void} = {
+    delete: () => emit('delete-item-action', event.item),
+    copy: () => copyValue(event?.item?.value),
+    edit: () => { console.log('START EDITOR') }
   }
+  actions[event.action] ? actions[event.action]() : console.log('Not found event');
 }
 
 
@@ -70,7 +73,10 @@ onMounted(() => {
     <!-- START SCREEN -->
     <div v-if="!detailsItems || !detailsItems?.length" class="start-screen">
       <span class="start-screen-title text">Copy some text</span>
-      <div class="i-fluent:book-pulse-20-filled w-48px h-48px" style="color: #ffd060;"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+        <path fill="#ffd060"
+          d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm7.69 2.958a.75.75 0 0 0-1.36-.043L8.785 10.5H7.75a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .67-.415l1.023-2.044l2.116 5.001a.75.75 0 0 0 1.339.086L15.93 12h.819a.75.75 0 0 0 0-1.5H15.5a.75.75 0 0 0-.648.372l-.995 1.706z" />
+      </svg>
     </div>
   </div>
 </template>
