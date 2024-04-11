@@ -99,7 +99,6 @@ onMounted(() => {
   align-items: center;
 }
 
-
 .popup-content .text {
   font-size: 14px;
   font-weight: 400;
@@ -112,7 +111,6 @@ onMounted(() => {
 .popup-content .wrapper-information {
   width: 100%;
 }
-
 
 .start-screen {
   width: 100px;
@@ -137,14 +135,17 @@ onMounted(() => {
   height: 270px;
 }
 
-.details-list {
-  height: 215px;
-  overflow-y: auto;
+.details-block-list {
   padding-left: 10px;
   list-style: none;
   padding-right: 10px;
 }
 
+.details-block__title {
+  text-align: center;
+  color: #d3ac13 !important;
+  font-weight: 600 !important;
+}
 
 .details-list::-webkit-scrollbar {
   width: 5px;

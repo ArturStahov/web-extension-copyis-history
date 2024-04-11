@@ -11,6 +11,10 @@ const props = defineProps({
     type: String,
     default: 'icon'
   },
+  tooltip: {
+    type: String,
+    default: ''
+  },
 });
 
 const { typeButton } = toRefs(props);
@@ -21,13 +25,12 @@ onMounted(() => {
   if(typeButton.value !== 'icon') {
     buttonStyle.value = ['button-default', 'shadow', 'cursor-pointer', 'border-none']
   }
-  
 })
 
 </script>
 
 <template>
-  <button @click="emit('click')" :class="buttonStyle" :bg='typeButton !== "icon" ? "teal-600 hover:teal-700" : ""'>
+  <button  @click="emit('click')" :class="buttonStyle" :bg='typeButton !== "icon" ? "teal-600 hover:teal-700" : ""'>
     <slot></slot>
   </button>
 </template>
