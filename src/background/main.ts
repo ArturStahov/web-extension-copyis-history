@@ -57,6 +57,12 @@ onMessage('get-init-copy-data', (message) => {
   }
 })
 
+onMessage('set-notification', (message) => {
+  const {data} = message
+  console.log('set-notification', data)
+  Notification(data as any);
+})
+
 onMessage('save-copy-data', async(message) => {
   const { data } = message;
   const saveArray: any[] = [...storageCopy.value];
@@ -101,6 +107,7 @@ onMessage('save-copy-data', async(message) => {
   (storageCopy.value as any) = saveArray;
   const usedSize = getStringMemorySize(JSON.stringify(saveArray));
   console.log('save-copy-data', newDataItem,'usedSize>>>>', usedSize)
+  browser.action.setBadgeText({ text: 'ON' });
   return {
     data: saveArray,
     size: usedSize,
@@ -126,6 +133,11 @@ onMessage('delete-item', (message: any) => {
 
     storageCopy.value = saveData;
     const usedSize = getStringMemorySize(JSON.stringify(saveData));
+
+    Notification({
+      title: 'Delete success!',
+      message: `Delete value: ${data.value?.split(0,10)}...`
+    })
 
     return {
       data: saveData,
@@ -163,4 +175,14 @@ onMessage('get-copy-data', (message) => {
 
 function getStringMemorySize(s: string) {
   return new Blob([s]).size;
+}
+
+function Notification(data: { title: string, message: string }) {
+  browser.notifications.create('notification1', {
+    type: 'basic',
+    iconUrl: '/assets/success_alert.png',
+    title: data.title,
+    message: data.message,
+    priority: 0
+  });
 }

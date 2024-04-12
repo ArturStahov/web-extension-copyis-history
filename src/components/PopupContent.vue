@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import 'uno.css'
 import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
-import { action } from 'webextension-polyfill';
+import { onMessage, sendMessage } from 'webext-bridge/content-script'
+
 
 const emit = defineEmits<{
   (e: 'close',): void,
@@ -32,6 +33,8 @@ const { hidePopup, detailsItems } = toRefs(props);
 async function copyValue(value: string) {
   try {
     await navigator.clipboard.writeText(value);
+    const payload = { title: 'Copied to clipboard!', message: `Copied value success!`};
+    await sendMessage('set-notification', payload, "background");
   } catch (error) {
     console.log('failed to copy to clipboard. error=' + error);
   }
