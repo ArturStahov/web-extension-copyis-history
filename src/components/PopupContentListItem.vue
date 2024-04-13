@@ -122,6 +122,7 @@ onMounted(() => {
   padding: 10px;
   z-index: 999999999999;
   line-height: 1.2;
+  word-break: break-all;
 }
 
 .details-block-list__item-tooltip-arrow {

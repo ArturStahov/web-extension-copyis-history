@@ -52,13 +52,14 @@ function handlerSubmit() {
   background: transparent;
   width: 90%;
   height: 500px;
+  margin-bottom: 15px;
   resize: none;
   border: 1px solid #8b888842;
   font-size: 14px;
   line-height: 1.2;
   color: #ffffff;
   padding: 5px;
-  margin-bottom: 15px;
+  word-break: break-all;
 }
 
 .content-editor .content-editor__textarea:focus {
