@@ -125,6 +125,11 @@ onMessage('delete-item', (message: any) => {
   
   if(parentItem) { 
     const deleteIdx = parentItem.items?.findIndex((el: any)=> el.id === data.id);
+    if (deleteIdx === -1) {
+      console.log('ERROR: not found delete item in db')
+      return;
+    }
+
     parentItem.items.splice(deleteIdx, 1);
 
     if (parentItem.items.length === 0) {
@@ -145,6 +150,39 @@ onMessage('delete-item', (message: any) => {
     }
   } else {
     console.log('ERROR: delete-item Not-found parent')
+  }
+})
+
+onMessage('save-edit-item', async (message: any) => {
+  const { data } = message;
+  console.log('delete-item', data)
+
+  const saveData = [...storageCopy.value];
+  const parentIdx = saveData.findIndex((parent: any) => parent.key === data?.key);
+  const parentItem = saveData[parentIdx] as any;
+
+  if (parentItem) {
+    const editIdx = parentItem.items?.findIndex((el: any) => el.id === data.id);
+    if (editIdx === -1) {
+      console.log('ERROR: not found edit item in db')
+      return;
+    }
+    parentItem.items.splice(editIdx, 1, data);
+
+    storageCopy.value = saveData;
+    const usedSize = getStringMemorySize(JSON.stringify(saveData));
+
+    Notification({
+      title: 'Edit success!',
+      message: `New value: ${data.value?.split(0, 10)}...`
+    })
+
+    return {
+      data: saveData,
+      size: usedSize,
+    }
+  } else {
+    console.log('ERROR: Edit item Not-found parent')
   }
 })
 

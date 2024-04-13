@@ -8,6 +8,7 @@ const emit = defineEmits<{
   (e: 'close',): void,
   (e: 'delete-item-action', item: any): void,
   (e: 'hide-popup-to-button',): void
+  (e: 'save-edit',item: any): void
 }>();
 
 const props = defineProps({
@@ -32,10 +33,6 @@ const { hidePopup, detailsItems } = toRefs(props);
 const enableEditor = ref<boolean>(false);
 
 const editItem = ref<any|null>(null);
-
-function handlerSaveEditItem(item: any) {
- //TODO: send item to background.js
-}
 
 function handlerCloseEditor() {
   enableEditor.value = false;
@@ -90,7 +87,7 @@ onMounted(() => {
     </div>
 
     <!-- EDITOR -->
-    <PopupContentEditor :editItem="editItem" v-if="enableEditor" @save-edit="handlerSaveEditItem" />
+    <PopupContentEditor :editItem="editItem" v-if="enableEditor" @save-edit="(item) => emit('save-edit',item)" />
 
     <!-- START SCREEN -->
     <div v-if="!detailsItems || !detailsItems?.length" class="start-screen">

@@ -80,6 +80,15 @@ async function handlerDeleteListItem(item: any) {
   } 
 }
 
+async function handlerSaveEditItem(item: any) {
+  console.log('SAVE_EDITED_ITEM', item)
+  const res = await sendMessage('save-edit-item', item, "background");
+  if (res) {
+    details.value = [...(res as any as ISaveResponseData).data]
+    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+  }
+}
+
 async function openPopupButton() {
   try {
     const initPayload = { location: window.location.href };
@@ -101,8 +110,12 @@ async function openPopupButton() {
 <template>
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
     <!-- POPUP -->
-    <PopupContent :detailsItems="details" :hidePopup="hidePopup" :show="show" @close="togglePopup()"
-      @hide-popup-to-button="hidePopupToButton" @delete-item-action="handlerDeleteListItem" />
+    <PopupContent :detailsItems="details" 
+      :hidePopup="hidePopup" :show="show" 
+      @close="togglePopup()"
+      @hide-popup-to-button="hidePopupToButton" 
+      @delete-item-action="handlerDeleteListItem"
+      @save-edit="handlerSaveEditItem" />
 
     <!-- BUTTON HIDE POPUP -->
     <button v-if="hidePopup" class="open-button flex w-10 h-10 rounded-full shadow cursor-pointer border-none"

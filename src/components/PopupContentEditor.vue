@@ -2,6 +2,10 @@
 import 'uno.css'
 import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
 
+const emit = defineEmits<{
+  (e: 'save-edit', payload: any): void,
+}>();
+
 const props = defineProps({
   editItem: {
     type: Object,
@@ -13,22 +17,31 @@ const props = defineProps({
 
 const { editItem } = toRefs(props);
 
-const emit = defineEmits<{
-  (e: 'save-edit',): void,
-}>();
+const editValue = ref<any>(null);
 
 onMounted(() => {
+  if (editItem?.value) {
+    editValue.value = editItem?.value?.value;
+  } else {
+    editValue.value = ''
+  }
 })
 
 function handlerSubmit() {
-
+  if (editItem?.value?.value && editItem?.value?.value !== editValue.value) {
+    const payload = {
+      ...editItem.value,
+      value: editValue.value
+    }
+    emit('save-edit', payload);
+  }
 }
 
 </script>
 
 <template>
   <div class="content-editor">
-    <textarea class="content-editor__textarea">
+    <textarea class="content-editor__textarea" v-model="editValue">
 
     </textarea>
     <ButtonComponent class="save-button" :type-button="'text'" @click="handlerSubmit">
