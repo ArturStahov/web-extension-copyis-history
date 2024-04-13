@@ -44,13 +44,12 @@ onMounted(() => {
 
 .button-default {
   display: flex;
-  height: auto !important;
-  width: auto !important;
   pointer-events: all !important;
   justify-content: center;
   align-items: center;
   border-radius: 5px;
   color: #0a0a0a;
+  font-weight: 600;
   font-size: 12px;
 }
 </style>

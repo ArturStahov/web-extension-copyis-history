@@ -29,6 +29,23 @@ const props = defineProps({
 
 const { hidePopup, detailsItems } = toRefs(props);
 
+const enableEditor = ref<boolean>(false);
+
+const editItem = ref<any|null>(null);
+
+function handlerSaveEditItem(item: any) {
+ //TODO: send item to background.js
+}
+
+function handlerCloseEditor() {
+  enableEditor.value = false;
+  editItem.value = null;
+}
+
+function handlerOpenEditor(item: any) {
+  enableEditor.value = true;
+  editItem.value = item;
+}
 
 async function copyValue(value: string) {
   try {
@@ -44,11 +61,10 @@ function handlerItemAction(event: {action: string, item: any}) {
   const actions: {[key:string]: ()=> void} = {
     delete: () => emit('delete-item-action', event.item),
     copy: () => copyValue(event?.item?.value),
-    edit: () => { console.log('START EDITOR') }
+    edit: () => handlerOpenEditor(event.item)
   }
   actions[event.action] ? actions[event.action]() : console.log('Not found event');
 }
-
 
 onMounted(() => {
 })
@@ -58,10 +74,11 @@ onMounted(() => {
 <template>
   <div class="popup-content text-gray-800 shadow w-max h-min" p="x-2 y-2" m="y-auto r-2" v-show="show && !hidePopup">
 
-    <PopupContentHeader @hide-popup-to-button="emit('hide-popup-to-button')" @close="emit('close')" />
+    <PopupContentHeader :enableEditor="enableEditor" @close-editor="handlerCloseEditor"
+      @hide-popup-to-button="emit('hide-popup-to-button')" @close="emit('close')" />
 
     <!-- MAIN SCREEN -->
-    <div v-if="detailsItems && detailsItems.length" class="popup-main">
+    <div v-if="detailsItems && detailsItems.length && !enableEditor" class="popup-main">
 
       <div v-for="parent in detailsItems" :key="parent.id" class="details-block">
         <h2 class="details-block__title text"> {{ parent.key }}</h2>
@@ -70,8 +87,10 @@ onMounted(() => {
             @details-list-action="handlerItemAction" />
         </ul>
       </div>
-
     </div>
+
+    <!-- EDITOR -->
+    <PopupContentEditor :editItem="editItem" v-if="enableEditor" @save-edit="handlerSaveEditItem" />
 
     <!-- START SCREEN -->
     <div v-if="!detailsItems || !detailsItems?.length" class="start-screen">

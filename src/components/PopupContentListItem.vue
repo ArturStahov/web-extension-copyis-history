@@ -29,7 +29,7 @@ function handlerStartHoverText() {
 }
 
 function getTooltipText() {
-  return `${item.value?.value?.slice(0, 500)}...`
+  return `${item.value?.value?.slice(0, 520)} ${item.value?.value?.length > 520 ? "...": ""}`
 }
 
 function handlerEndHoverText() {
@@ -64,6 +64,7 @@ onMounted(() => {
     </span>
 
     <div class="details-block-list__item-actions">
+
       <ButtonComponent :tooltip="'delete'" data-type="delete"
         @click="() => { emit('details-list-action', { action: 'delete', item })}">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -120,6 +121,7 @@ onMounted(() => {
   border-radius: 5px;
   padding: 10px;
   z-index: 999999999999;
+  line-height: 1.2;
 }
 
 .details-block-list__item-tooltip-arrow {
