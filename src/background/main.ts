@@ -153,6 +153,44 @@ onMessage('delete-item', (message: any) => {
   }
 })
 
+onMessage('favorite', async (message: any) => {
+  const { data } = message;
+  console.log('favorite', data)
+  const {item, action} = data
+
+  const saveData = [...storageCopy.value];
+  const parentIdx = saveData.findIndex((parent: any) => parent.key === item?.key);
+  const parentItem = saveData[parentIdx] as any;
+
+  if (parentItem) {
+    const editIdx = parentItem.items?.findIndex((el: any) => el.id === item.id);
+    if (editIdx === -1) {
+      console.log('ERROR: not found item in db')
+      return;
+    }
+    const updated = {
+      ...item,
+      favorite: action === 'add',
+    }
+    parentItem.items.splice(editIdx, 1, updated);
+
+    storageCopy.value = saveData;
+    const usedSize = getStringMemorySize(JSON.stringify(saveData));
+
+    Notification({
+      title: action === 'add' ? 'Add to favorite success!' : 'Remove favorite success!',
+      message: `value: ${item.value?.split(0, 10)}...`
+    })
+
+    return {
+      data: saveData,
+      size: usedSize,
+    }
+  } else {
+    console.log('ERROR: item Not-found parent')
+  }
+})
+
 onMessage('save-edit-item', async (message: any) => {
   const { data } = message;
   console.log('delete-item', data)
