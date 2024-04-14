@@ -24,14 +24,14 @@ const { item } = toRefs(props);
 const hoverText = ref<boolean>(false);
 
 function handlerStartHoverText() {
-  if(item.value?.value?.length > 46) {
+  if (item.value?.value?.length > 46) {
     hoverText.value = true;
-    emit('preview-tooltip', { value: getTooltipText(), enable: true});
+    emit('preview-tooltip', { value: getTooltipText(), enable: true });
   }
 }
 
 function getTooltipText() {
-  return `${item.value?.value?.slice(0, 520)} ${item.value?.value?.length > 520 ? "...": ""}`
+  return `${item.value?.value?.slice(0, 520)} ${item.value?.value?.length > 520 ? "..." : ""}`
 }
 
 function handlerEndHoverText() {
@@ -40,7 +40,7 @@ function handlerEndHoverText() {
 }
 
 function handlerFavorite(item: any) {
-  if(!item.favorite) {
+  if (!item.favorite) {
     emit('details-list-action', { action: 'addToFavorite', item })
   } else {
     emit('details-list-action', { action: 'removeFavorite', item })
@@ -53,7 +53,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <li class="details-block-list__item" :class='{"favorite-item": item.favorite}'>
+  <li class="details-block-list__item" :class='{ "favorite-item": item.favorite }'>
     <svg class="details-block-list__item-marker" xmlns=" http://www.w3.org/2000/svg" width="16" height="16"
       viewBox="0 0 16 16">
       <path fill="#d3ac13" d="M4 8a4 4 0 1 1 8 0a4 4 0 0 1-8 0m4-2.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5" />
@@ -85,7 +85,7 @@ onMounted(() => {
         </svg>
       </ButtonComponent>
       <ButtonComponent :tooltip="'copy'" data-type="copy"
-        @click="() => emit('details-list-action', { action: 'copy', item})">
+        @click="() => emit('details-list-action', { action: 'copy', item })">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32">
           <path fill="#0d9488"
             d="M8.5 5.25A3.25 3.25 0 0 1 11.75 2h12A3.25 3.25 0 0 1 27 5.25v18a3.25 3.25 0 0 1-3.25 3.25h-12a3.25 3.25 0 0 1-3.25-3.25zM5 8.75c0-1.352.826-2.511 2-3.001v17.75a4.5 4.5 0 0 0 4.5 4.5h11.751a3.25 3.25 0 0 1-3.001 2H11.5A6.5 6.5 0 0 1 5 23.5z" />
@@ -113,12 +113,20 @@ onMounted(() => {
 .details-block-list__item {
   position: relative;
   border: 1px solid #8b888842;
-  padding: 5px;
+  padding: 5px 5px 5px 20px;
   display: flex;
   text-decoration: none;
   list-style: none;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.details-block-list__item-marker {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translateY(-50%);
+  z-index: 9999;
 }
 
 .favorite-item {
@@ -138,11 +146,11 @@ onMounted(() => {
 }
 
 .details-block-list__item-text {
-    max-width: 275px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-right: 20px;
+  max-width: 275px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 20px;
 }
 
 .details-block-list__item-time {

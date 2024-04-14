@@ -36,6 +36,7 @@ const listTabsActions = [
   {
     name: 'all',
     code: 'main',
+    icon:`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffd060" fill-rule="evenodd" d="M20 4H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1M4 2a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zm2 5h2v2H6zm5 0a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2zm-3 4H6v2h2zm2 1a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2h-6a1 1 0 0 1-1-1m-2 3H6v2h2zm2 1a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2h-6a1 1 0 0 1-1-1" clip-rule="evenodd"/></svg>`,
     action: () => {
       typeList.value = 'main';
     }
@@ -43,6 +44,7 @@ const listTabsActions = [
   {
     name: 'favorite',
     code: 'favorite',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 2048 2048"><path fill="#ffd060" d="m1416 1254l248 794l-640-492l-640 492l248-794L0 768h784L1024 0l240 768h784zm5 446q-38-124-76-246t-78-247q103-77 203-155t202-156h-502l-146-467l-146 467H376q102 78 202 156t203 155q-40 124-78 246t-76 247l397-306z"/></svg>`,
     action: () => {
       typeList.value = 'favorite';
     }
@@ -125,9 +127,11 @@ onMounted(() => {
     <PopupContentHeader :enableEditor="enableEditor" @close-editor="handlerCloseEditor"
       @hide-popup-to-button="emit('hide-popup-to-button')" @close="emit('close')" />
 
-    <div class="list-tabs">
-      <div v-for="(tab,idx) in listTabsActions" @click.native="tab.action" :key="idx" :class="{'active-tab': tab.code === typeList}" class="list-tabs-button">
-         <span class="tab-name">{{ tab.name }}</span>
+    <div v-if="!enableEditor" class="list-tabs">
+      <div v-for="(tab,idx) in listTabsActions" @click.native="tab.action" :key="idx"
+        :class="{'active-tab': tab.code === typeList}" class="list-tabs-button">
+        <span class="tab-icon" v-html="tab.icon"></span>
+        <span class="tab-name">{{ tab.name }}</span>
       </div>
     </div>
 
@@ -175,7 +179,7 @@ onMounted(() => {
   top: 5px;
   right: 5px;
   width: 500px;
-  height: 75%;
+  height: 80%;
   background-color: #363636;
   -webkit-box-shadow: 1px 1px 5px 1px #ffffff57;
   box-shadow: 1px 1px 5px 1px #ffffff57;
@@ -183,6 +187,36 @@ onMounted(() => {
   border-radius: 5px;
   opacity: 0.95;
   z-index: 2147483645;
+}
+
+.list-tabs {
+  margin-top: 10px;
+  margin-left: 12px;
+  display: flex;
+}
+
+.list-tabs .list-tabs-button {
+  padding-bottom: 5px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.list-tabs .tab-name {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.list-tabs .active-tab {
+  border-bottom: 1px solid #d3ac13;
+}
+
+.list-tabs .tab-icon {
+  margin-right: 5px;
 }
 
 .tooltip-preview {

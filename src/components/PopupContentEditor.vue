@@ -64,7 +64,7 @@ function handlerSubmit() {
 .content-editor .content-editor__textarea {
   background: transparent;
   width: 90%;
-  height: 500px;
+  height: 550px;
   margin-bottom: 15px;
   resize: none;
   border: 1px solid #8b888842;
