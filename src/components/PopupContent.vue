@@ -30,10 +30,28 @@ const props = defineProps({
     default: false
   },
 });
-
 const { hidePopup, detailsItems } = toRefs(props);
 
+const listTabsActions = [
+  {
+    name: 'all',
+    code: 'main',
+    action: () => {
+      typeList.value = 'main';
+    }
+  },
+  {
+    name: 'favorite',
+    code: 'favorite',
+    action: () => {
+      typeList.value = 'favorite';
+    }
+  }
+]
+
 const enableEditor = ref<boolean>(false);
+
+const typeList = ref<'main' | 'favorite'>('main');
 
 const editItem = ref<any|null>(null);
 
@@ -78,6 +96,15 @@ function handlerPreviewTooltip(options: { value: string, enable: boolean }) {
   tooltipPreview.value = options;
 }
 
+function getFavoriteList(detailsItems:any[]) {
+  const all:any[] = [];
+   detailsItems.forEach(parent => {
+       const parentFavorites = parent.items.filter((item: any )=> item.favorite);
+       all.push(...parentFavorites);
+  });
+  return getRenderSortedList(all,'id');
+}
+
 onMounted(() => {
 })
 
@@ -98,9 +125,17 @@ onMounted(() => {
     <PopupContentHeader :enableEditor="enableEditor" @close-editor="handlerCloseEditor"
       @hide-popup-to-button="emit('hide-popup-to-button')" @close="emit('close')" />
 
+    <div class="list-tabs">
+      <div v-for="(tab,idx) in listTabsActions" @click.native="tab.action" :key="idx" :class="{'active-tab': tab.code === typeList}" class="list-tabs-button">
+         <span class="tab-name">{{ tab.name }}</span>
+      </div>
+    </div>
+
     <!-- MAIN SCREEN -->
-      <div v-if="detailsItems && detailsItems.length && !enableEditor" class="popup-main">
-        <div class="popup-main__scroll-wrapper">
+    <div v-if="detailsItems && detailsItems.length && !enableEditor" class="popup-main">
+      <div class="popup-main__scroll-wrapper">
+        <!-- MAIN LIST -->
+        <div v-if="typeList === 'main'" class="main-list-wrapper">
           <div v-for="parent in getRenderSortedList(detailsItems,'key')" :key="parent.id" class="details-block">
             <h2 class="details-block__title text"> {{ parent.key }}</h2>
             <ul class="details-block-list">
@@ -109,7 +144,15 @@ onMounted(() => {
             </ul>
           </div>
         </div>
+        <!-- FAVORITE LIST -->
+        <div v-if="typeList === 'favorite'" class="details-favorite">
+          <ul class="details-block-list">
+            <PopupContentListItem v-for="item in getFavoriteList(detailsItems)" :key="item.id" :item="item"
+              @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
+          </ul>
+        </div>
       </div>
+    </div>
 
     <!-- EDITOR -->
     <PopupContentEditor :editItem="editItem" v-if="enableEditor" @save-edit="(item) => emit('save-edit',item)" />
@@ -218,7 +261,6 @@ onMounted(() => {
   padding-left: 10px;
   list-style: none;
   padding-right: 10px;
-  
 }
 
 .details-block__title {
