@@ -126,9 +126,10 @@ async function openPopupButton() {
 <template>
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
     <!-- POPUP -->
-    <PopupContent :detailsItems="details" :hidePopup="hidePopup" :show="show" @close="togglePopup()"
-      @hide-popup-to-button="hidePopupToButton" @delete-item-action="handlerDeleteListItem"
-      @save-edit="handlerSaveEditItem" @add-to-favorite="handlerAddToFavorite" @remove-favorite="handlerRemoveFromFavorite" />
+    <PopupContent :sizeStorage="sizeStorage" :detailsItems="details" :hidePopup="hidePopup" :show="show"
+      @close="togglePopup()" @hide-popup-to-button="hidePopupToButton" @delete-item-action="handlerDeleteListItem"
+      @save-edit="handlerSaveEditItem" @add-to-favorite="handlerAddToFavorite"
+      @remove-favorite="handlerRemoveFromFavorite" />
 
     <!-- BUTTON HIDE POPUP -->
     <button v-if="hidePopup" class="open-button flex w-10 h-10 rounded-full shadow cursor-pointer border-none"

@@ -29,8 +29,11 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  sizeStorage: {
+    type: Number
+  }
 });
-const { hidePopup, detailsItems } = toRefs(props);
+const { hidePopup, detailsItems, sizeStorage } = toRefs(props);
 
 const listTabsActions = [
   {
@@ -48,12 +51,20 @@ const listTabsActions = [
     action: () => {
       typeList.value = 'favorite';
     }
+  },
+  {
+    name: 'memory',
+    code: 'memory',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><g fill="none" stroke="#ffd060" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"><path d="M44 11v27c0 3.314-8.954 6-20 6S4 41.314 4 38V11"/><path d="M44 29c0 3.314-8.954 6-20 6S4 32.314 4 29m40-9c0 3.314-8.954 6-20 6S4 23.314 4 20"/><ellipse cx="24" cy="10" rx="20" ry="6"/></g></svg>`,
+    action: () => {
+      typeList.value = 'memory';
+    }
   }
 ]
 
 const enableEditor = ref<boolean>(false);
 
-const typeList = ref<'main' | 'favorite'>('main');
+const typeList = ref<'main' | 'favorite' | 'memory'>('main');
 
 const editItem = ref<any|null>(null);
 
@@ -140,7 +151,7 @@ onMounted(() => {
       <div class="popup-main__scroll-wrapper">
         <!-- MAIN LIST -->
         <div v-if="typeList === 'main'" class="main-list-wrapper">
-          <div v-for="parent in getRenderSortedList(detailsItems,'key')" :key="parent.id" class="details-block">
+          <div v-for="parent in getRenderSortedList(detailsItems,'id')" :key="parent.id" class="details-block">
             <h2 class="details-block__title text"> {{ parent.key }}</h2>
             <ul class="details-block-list">
               <PopupContentListItem v-for="item in getRenderSortedList(parent.items, 'id')" :key="item.id" :item="item"
@@ -154,6 +165,10 @@ onMounted(() => {
             <PopupContentListItem v-for="item in getFavoriteList(detailsItems)" :key="item.id" :item="item"
               @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
           </ul>
+        </div>
+
+        <div v-if="typeList === 'memory'" class="details-memory">
+          <PopupContentMemory :sizeStorage="sizeStorage" />
         </div>
       </div>
     </div>
@@ -179,7 +194,7 @@ onMounted(() => {
   top: 5px;
   right: 5px;
   width: 500px;
-  height: 80%;
+  height: 82%;
   background-color: #363636;
   -webkit-box-shadow: 1px 1px 5px 1px #ffffff57;
   box-shadow: 1px 1px 5px 1px #ffffff57;
@@ -196,6 +211,7 @@ onMounted(() => {
 }
 
 .list-tabs .list-tabs-button {
+  margin-right: 10px;
   padding-bottom: 5px;
   width: 100px;
   display: flex;
@@ -283,7 +299,7 @@ onMounted(() => {
 .popup-content .popup-main {
   height: 605px;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .popup-content .popup-main__scroll-wrapper {
