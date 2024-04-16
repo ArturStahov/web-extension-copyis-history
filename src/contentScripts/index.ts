@@ -9,7 +9,6 @@ let init = false;
 
 (() => {
   onMessage('activated-new-tab', async() => {
-    console.log('ACTIVATE EXTENSION 1')
     if (init) {
       return;
     }
@@ -17,7 +16,6 @@ let init = false;
   })
 
   onMessage('activate-extension-event', async() => {
-    console.log('ACTIVATE EXTENSION 2')
     if (init) {
       await sendMessage('retry-init', {}, "background");
       return;
@@ -41,5 +39,13 @@ function mountContentPopup() {
   const app = createApp(App)
   setupApp(app)
   app.mount(root);
+  document.querySelector(`#${container.id}`)?.addEventListener("wheel",(event: any)=> {
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  })
+  document.querySelector(`#${container.id}`)?.addEventListener("click", (event: any) => {
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  })
   init = true;
 }

@@ -64,6 +64,8 @@ const listTabsActions = [
 
 const enableEditor = ref<boolean>(false);
 
+const memoryOptions = ref<any>({});
+
 const typeList = ref<'main' | 'favorite' | 'memory'>('main');
 
 const editItem = ref<any|null>(null);
@@ -118,6 +120,13 @@ function getFavoriteList(detailsItems:any[]) {
   return getRenderSortedList(all,'id');
 }
 
+function handlerSaveMemoryOptions(options: {[key: string]: string}) {
+ console.log('OPTIONS>>>',options)
+  memoryOptions.value = options;
+  // todo: send to background js and save to localstorage
+  // in init get from storage
+}
+
 onMounted(() => {
 })
 
@@ -168,7 +177,8 @@ onMounted(() => {
         </div>
 
         <div v-if="typeList === 'memory'" class="details-memory">
-          <PopupContentMemory :sizeStorage="sizeStorage" />
+          <PopupContentMemory :sizeStorage="sizeStorage" :memoryOptions="memoryOptions"
+            @save-options="handlerSaveMemoryOptions" />
         </div>
       </div>
     </div>
