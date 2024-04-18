@@ -21,7 +21,7 @@ const { sizeStorage, memoryOptions } = toRefs(props);
 
 const optionsData = ref<any>({});
 
-let settingsFields = [
+let settingsFields = ref<any>([
   {
     code: 'auto-clear-last',
     type: 'checkbox',
@@ -29,18 +29,29 @@ let settingsFields = [
     tooltip: 'clear data from end list only if the end of memory limit (not clear favorite)',
     value: false,
   }
-]
+])
 
 const init = ref<boolean>(false);
 
-onMounted(() => {
-  settingsFields = settingsFields.map(item => {
+function setEntryOptions() {
+  init.value = false;
+  settingsFields.value = settingsFields.value.map((item: any) => {
     return {
       ...item,
-      ...(memoryOptions?.value?.[item.code] ? { value: memoryOptions.value[item.code]} : {})
+      ...(memoryOptions?.value?.[item.code] ? { value: memoryOptions.value[item.code] } : {})
     }
   })
+  init.value = true;
+}
+
+onMounted(() => {
+  setEntryOptions();
   init.value = true
+})
+
+watch(memoryOptions, () => {
+  setEntryOptions();
+  console.log('UPDATE>>>>>>>>>>>>', settingsFields.value)
 })
 
 function handlerChangeOptions(payload: {code: string, value: any}) {

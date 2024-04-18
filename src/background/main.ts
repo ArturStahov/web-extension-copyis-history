@@ -1,7 +1,7 @@
 import { onMessage, sendMessage } from 'webext-bridge/background'
 import uniqid from 'uniqid';
 
-import { storageCopy } from '~/logic/storage'
+import { storageCopy, optionsStorage } from '~/logic/storage'
 
 
 // only on dev mode
@@ -16,6 +16,24 @@ if (import.meta.hot) {
 browser.runtime.onInstalled.addListener((): void => {
   // eslint-disable-next-line no-console
   console.log('Extension installed')
+})
+
+onMessage('get-options', (message) => {
+  const options = optionsStorage.value;
+  console.log('get-options', message?.data)
+  return options
+})
+
+onMessage('save-memory-options', (message: any) => {
+  const { data } = message;
+  const options = optionsStorage.value;
+  const update = {
+    ...options,
+    memory: data
+  }
+  optionsStorage.value = update;
+  console.log('save-memory-options', update);
+  return data
 })
 
 let currentActiveTabId = 0

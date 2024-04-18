@@ -31,9 +31,13 @@ const props = defineProps({
   },
   sizeStorage: {
     type: Number
+  },
+  entryMemoryOptions: {
+    type: Object,
+    default: () => ({})
   }
 });
-const { hidePopup, detailsItems, sizeStorage } = toRefs(props);
+const { hidePopup, detailsItems, sizeStorage, entryMemoryOptions } = toRefs(props);
 
 const listTabsActions = [
   {
@@ -120,16 +124,19 @@ function getFavoriteList(detailsItems:any[]) {
   return getRenderSortedList(all,'id');
 }
 
-function handlerSaveMemoryOptions(options: {[key: string]: string}) {
+async function handlerSaveMemoryOptions(options: {[key: string]: string}) {
  console.log('OPTIONS>>>',options)
-  memoryOptions.value = options;
-  // todo: send to background js and save to localstorage
-  // in init get from storage
+  const data = await sendMessage('save-memory-options', options, "background");
+  memoryOptions.value = data;
 }
 
-onMounted(() => {
+onMounted(async() => {
+  memoryOptions.value = entryMemoryOptions.value;
 })
 
+watch(entryMemoryOptions,() => {
+  memoryOptions.value = entryMemoryOptions.value;
+})
 </script>
 
 <template>

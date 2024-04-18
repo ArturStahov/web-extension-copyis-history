@@ -19,6 +19,10 @@ const details = ref<null | IDataItem[] >(null);
 
 const sizeStorage = ref<number>(0);
 
+const options = ref<any>(null);
+
+const init = ref<boolean>(false);
+
 onMessage('event-retry', async(response) => {
   const initPayload = { location: window.location.href };
   const res = await sendMessage('get-copy-data', initPayload, "background");
@@ -65,6 +69,11 @@ onMounted(async() => {
     sizeStorage.value = Number((res as any as IInitResponseData).size);
     console.log('INIT Details')
   }
+
+  const data = await sendMessage('get-options', {}, "background");
+  options.value = data;
+  console.log('options.value>>>>', options.value)
+  init.value = true
 })
 
 function hidePopupToButton() {
@@ -116,6 +125,10 @@ async function openPopupButton() {
       console.log('INIT Details openPopup>>', res)
     }
     hidePopup.value = false;
+
+    const data = await sendMessage('get-options', {}, "background");
+    options.value = data;
+    console.log('RE_INIT OPTIONS', data)
   } catch (error: any) {
     console.log(error?.message);
   }
@@ -126,7 +139,7 @@ async function openPopupButton() {
 <template>
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
     <!-- POPUP -->
-    <PopupContent :sizeStorage="sizeStorage" :detailsItems="details" :hidePopup="hidePopup" :show="show"
+    <PopupContent  v-if="init" :entry-memory-options="options?.memory" :sizeStorage="sizeStorage" :detailsItems="details" :hidePopup="hidePopup" :show="show"
       @close="togglePopup()" @hide-popup-to-button="hidePopupToButton" @delete-item-action="handlerDeleteListItem"
       @save-edit="handlerSaveEditItem" @add-to-favorite="handlerAddToFavorite"
       @remove-favorite="handlerRemoveFromFavorite" />
