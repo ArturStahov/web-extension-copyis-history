@@ -4,8 +4,6 @@ import 'uno.css'
 import { ref, onMounted, reactive } from 'vue'
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
 
-const LIMIT_STORAGE = 10485760;
-
 interface ICopyItem { value: string, location: string, time: string, key: string, id: string, favorite?: boolean };
 interface IDataItem { key: string, items: ICopyItem[], id: string}
 interface ISaveResponseData { size: string, data: IDataItem[] }
@@ -48,7 +46,7 @@ const handlerCopyText = async(e: any) => {
     const copyText = getSelectionText();
     const payload = { value: copyText, location: window.location.href };
     const res = await sendMessage('save-copy-data', payload, "background");
-    if (show) {
+    if (show && res) {
       details.value = [...(res as any as ISaveResponseData).data]
       sizeStorage.value = Number((res as any as ISaveResponseData).size);
     }

@@ -3,6 +3,7 @@ import uniqid from 'uniqid';
 
 import { storageCopy, optionsStorage } from '~/logic/storage'
 
+const LIMIT_STORAGE = 10100700;
 
 // only on dev mode
 if (import.meta.hot) {
@@ -83,7 +84,7 @@ onMessage('set-notification', (message) => {
 
 onMessage('save-copy-data', async(message) => {
   const { data } = message;
-  const saveArray: any[] = [...storageCopy.value];
+  const saveArray: any[] = JSON.parse(JSON.stringify(storageCopy.value));
 
   const timeOptions: any = {
     hour12: false,
@@ -122,22 +123,58 @@ onMessage('save-copy-data', async(message) => {
     saveArray.splice(parentIdx, 1, parentItem);
   }
   
-  (storageCopy.value as any) = saveArray;
   const usedSize = getStringMemorySize(JSON.stringify(saveArray));
-  console.log('save-copy-data', newDataItem,'usedSize>>>>', usedSize)
+
+  const autoClearEnable = optionsStorage.value?.memory?.['auto-clear-last'];
+
+  if (usedSize >= LIMIT_STORAGE && !autoClearEnable) {
+    Notification({
+      title: 'ERROR save copy!',
+      message: `The end storage memory limit! Please enable options auto-clear!`
+    });
+    return {
+      data: storageCopy.value,
+      size: getStringMemorySize(JSON.stringify(storageCopy.value)),
+      error: {type: 'memory', message: 'end limit memory'}
+    }
+  } 
+
+  let needRemoveFavorite = false;
+  
+  if(usedSize >= LIMIT_STORAGE && autoClearEnable) { 
+    // CLEARED LAST ELEMENT 
+    needRemoveFavorite = autoClearOldItems(saveArray);
+  }
+
+  console.log('needRemoveFavorite>>>>>>>', needRemoveFavorite)
+
+  if (needRemoveFavorite) {
+    Notification({
+      title: 'ERROR save copy!',
+      message: `The end storage memory limit! Please remove some favorite!`
+    });
+    return {
+      data: storageCopy.value,
+      size: getStringMemorySize(JSON.stringify(storageCopy.value)),
+      error: { type: 'memory', message: 'end limit memory, remove favorite!' }
+    }
+  }
+
+  (storageCopy.value as any) = saveArray;
+  console.log('save-copy-data', newDataItem, 'usedSize>>>>', usedSize)
   browser.action.setBadgeText({ text: 'ON' });
   return {
     data: saveArray,
     size: usedSize,
   }
+  
 })
-
 
 onMessage('delete-item', (message: any) => {
   const { data } = message;
   console.log('delete-item', data)
 
-  const saveData = [...storageCopy.value];
+  const saveData = JSON.parse(JSON.stringify(storageCopy.value));
   const parentIdx = saveData.findIndex((parent: any) => parent.key === data?.key);
   const parentItem = saveData[parentIdx] as any;
   
@@ -176,7 +213,7 @@ onMessage('favorite', async (message: any) => {
   console.log('favorite', data)
   const {item, action} = data
 
-  const saveData = [...storageCopy.value];
+  const saveData = JSON.parse(JSON.stringify(storageCopy.value));
   const parentIdx = saveData.findIndex((parent: any) => parent.key === item?.key);
   const parentItem = saveData[parentIdx] as any;
 
@@ -211,9 +248,9 @@ onMessage('favorite', async (message: any) => {
 
 onMessage('save-edit-item', async (message: any) => {
   const { data } = message;
-  console.log('delete-item', data)
+  console.log('save-edit-item', data)
 
-  const saveData = [...storageCopy.value];
+  const saveData = JSON.parse(JSON.stringify(storageCopy.value));
   const parentIdx = saveData.findIndex((parent: any) => parent.key === data?.key);
   const parentItem = saveData[parentIdx] as any;
 
@@ -223,10 +260,48 @@ onMessage('save-edit-item', async (message: any) => {
       console.log('ERROR: not found edit item in db')
       return;
     }
+
     parentItem.items.splice(editIdx, 1, data);
 
-    storageCopy.value = saveData;
     const usedSize = getStringMemorySize(JSON.stringify(saveData));
+
+    const autoClearEnable = optionsStorage.value?.memory?.['auto-clear-last'];
+
+    if (usedSize >= LIMIT_STORAGE && !autoClearEnable) {
+      Notification({
+        title: 'ERROR save copy!',
+        message: `The end storage memory limit! Please enable options auto-clear!`
+      });
+      return {
+        data: storageCopy.value,
+        size: getStringMemorySize(JSON.stringify(storageCopy.value)),
+        error: { type: 'memory', message: 'end limit memory' }
+      }
+    }
+
+    let needRemoveFavorite = false;
+
+    if (usedSize >= LIMIT_STORAGE && autoClearEnable) {
+      // CLEARED LAST ELEMENT 
+      needRemoveFavorite = autoClearOldItems(saveData);
+    }
+
+    console.log('needRemoveFavorite>>>>>>>', needRemoveFavorite)
+
+    if (needRemoveFavorite) {
+      Notification({
+        title: 'ERROR save copy!',
+        message: `The end storage memory limit! Please remove some favorite!`
+      });
+      return {
+        data: storageCopy.value,
+        size: getStringMemorySize(JSON.stringify(storageCopy.value)),
+        error: { type: 'memory', message: 'end limit memory, remove favorite!' }
+      }
+    }
+
+    storageCopy.value = saveData;
+    const currentSize = getStringMemorySize(JSON.stringify(saveData));
 
     Notification({
       title: 'Edit success!',
@@ -235,7 +310,7 @@ onMessage('save-edit-item', async (message: any) => {
 
     return {
       data: saveData,
-      size: usedSize,
+      size: currentSize,
     }
   } else {
     console.log('ERROR: Edit item Not-found parent')
@@ -266,6 +341,43 @@ onMessage('get-copy-data', (message) => {
     size: usedSize,
   }
 })
+
+function autoClearOldItems(saveArray: any[]) {
+  let needRemoveFavorite = false;
+  const checkedArray = JSON.parse(JSON.stringify(saveArray))
+  for (let iterator = 0; iterator <= checkedArray.length; iterator += 1) {
+    console.log("iterator======", iterator)
+    if (!saveArray[iterator]) {
+      needRemoveFavorite = true;
+      break
+    }
+    const clearItems = saveArray[iterator]?.items?.filter((item: any) => item.favorite);
+    const clearedItem = {
+      ...saveArray[iterator],
+      items: clearItems
+    }
+    if (clearItems.length) {
+      saveArray.splice(iterator, 1, clearedItem);
+    } else {
+      saveArray.splice(iterator, 1);
+    }
+
+    if (iterator === checkedArray.length - 1) {
+      console.log('lastIterator', iterator)
+    }
+
+    const checkedSize = getStringMemorySize(JSON.stringify(saveArray))
+    if (checkedSize < LIMIT_STORAGE) {
+      break;
+    }
+    console.log("iterator+++++", iterator, checkedArray.length - 1, checkedSize >= LIMIT_STORAGE)
+    if (iterator === checkedArray.length - 1 && checkedSize >= LIMIT_STORAGE) {
+      needRemoveFavorite = true;
+    }
+  }
+
+  return needRemoveFavorite
+}
 
 function getStringMemorySize(s: string) {
   return new Blob([s]).size;

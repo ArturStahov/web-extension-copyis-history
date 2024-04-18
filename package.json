@@ -57,6 +57,7 @@
     "webextension-polyfill": "^0.10.0"
   },
   "dependencies": {
+    "tesseract.js": "^5.0.5",
     "uniqid": "^5.4.0"
   }
 }

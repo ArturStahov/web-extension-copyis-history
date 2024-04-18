@@ -57,6 +57,14 @@ const listTabsActions = [
     }
   },
   {
+    name: 'parse image',
+    code: 'parse-image',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffd060" d="M21 6.25A3.25 3.25 0 0 0 17.75 3H6.25A3.25 3.25 0 0 0 3 6.25v4.507a5.5 5.5 0 0 1 1.5-.882V6.25c0-.966.784-1.75 1.75-1.75h11.5c.966 0 1.75.784 1.75 1.75v11.5q-.002.315-.104.595l-5.822-5.702l-.128-.116a2.25 2.25 0 0 0-2.243-.38c.259.425.461.889.598 1.38a.75.75 0 0 1 .724.188L18.33 19.4a1.8 1.8 0 0 1-.581.099h-4.775l.512.513c.278.277.443.626.495.987h3.768A3.25 3.25 0 0 0 21 17.75zm-3.496 2.502a2.252 2.252 0 1 0-4.504 0a2.252 2.252 0 0 0 4.504 0m-3.004 0a.752.752 0 1 1 1.504 0a.752.752 0 0 1-1.504 0M9.95 17.89a4.5 4.5 0 1 0-1.145.976l2.915 2.915a.75.75 0 1 0 1.06-1.06zM6.5 18a3 3 0 1 1 0-6a3 3 0 0 1 0 6"/></svg>`,
+    action: () => {
+      typeList.value = 'parse-image';
+    }
+  },
+  {
     name: 'memory',
     code: 'memory',
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><g fill="none" stroke="#ffd060" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"><path d="M44 11v27c0 3.314-8.954 6-20 6S4 41.314 4 38V11"/><path d="M44 29c0 3.314-8.954 6-20 6S4 32.314 4 29m40-9c0 3.314-8.954 6-20 6S4 23.314 4 20"/><ellipse cx="24" cy="10" rx="20" ry="6"/></g></svg>`,
@@ -70,7 +78,7 @@ const enableEditor = ref<boolean>(false);
 
 const memoryOptions = ref<any>({});
 
-const typeList = ref<'main' | 'favorite' | 'memory'>('main');
+const typeList = ref<'main' | 'favorite' | 'memory' | 'parse-image'>('main');
 
 const editItem = ref<any|null>(null);
 
@@ -130,6 +138,11 @@ async function handlerSaveMemoryOptions(options: {[key: string]: string}) {
   memoryOptions.value = data;
 }
 
+async function handlerSaveParseImage(data: {value: string}) {
+  console.log('PARSE_IMAGE>>>', data)
+  // SAVE TO SAVE_DATA
+}
+
 onMounted(async() => {
   memoryOptions.value = entryMemoryOptions.value;
 })
@@ -182,7 +195,11 @@ watch(entryMemoryOptions,() => {
               @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
           </ul>
         </div>
-
+        <!-- PARSE IMAGE -->
+        <div v-if="typeList === 'parse-image'" class="details-parse">
+          <PopupContentParseImage @save-image-parse="handlerSaveParseImage" />
+        </div>
+        <!-- MEMORY SETTINGS -->
         <div v-if="typeList === 'memory'" class="details-memory">
           <PopupContentMemory :sizeStorage="sizeStorage" :memoryOptions="memoryOptions"
             @save-options="handlerSaveMemoryOptions" />
