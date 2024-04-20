@@ -85,16 +85,16 @@ function handlerSubmit() {
 }
 
 .content-editor .content-editor__textarea::-webkit-scrollbar {
-  width: 5px;
+  width: 5px !important;
 }
 
 .content-editor .content-editor__textarea::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  opacity: 0.5;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
+  opacity: 0.5 !important;
 }
 
 .content-editor .content-editor__textarea::-webkit-scrollbar-thumb {
-  background-color: #ffd060;
-  outline: 1px solid slategrey;
+  background-color: #ffd060 !important;
+  outline: 1px solid slategrey !important;
 }
 </style>

@@ -4,7 +4,7 @@ import 'uno.css'
 import { ref, onMounted, reactive } from 'vue'
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
 
-interface ICopyItem { value: string, location: string, time: string, key: string, id: string, favorite?: boolean };
+interface ICopyItem { value: string, location?: string, time: string, key: string, id: string, favorite?: boolean, action?: string };
 interface IDataItem { key: string, items: ICopyItem[], id: string}
 interface ISaveResponseData { size: string, data: IDataItem[] }
 interface IInitResponseData { size: string, data: IDataItem[] }
@@ -132,15 +132,29 @@ async function openPopupButton() {
   }
 }
 
+async function handlerSaveParseImage(data: any) {
+  console.log('SAVE_PARSE_IMAGE', data)
+  const payload = {
+    ...data,
+    action: 'parse-image'
+  }
+  const res = await sendMessage('save-parse-image', payload, "background");
+  if (res) {
+    details.value = [...(res as any as ISaveResponseData).data]
+    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+  }
+}
+
 </script>
 
 <template>
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
     <!-- POPUP -->
-    <PopupContent  v-if="init" :entry-memory-options="options?.memory" :sizeStorage="sizeStorage" :detailsItems="details" :hidePopup="hidePopup" :show="show"
-      @close="togglePopup()" @hide-popup-to-button="hidePopupToButton" @delete-item-action="handlerDeleteListItem"
-      @save-edit="handlerSaveEditItem" @add-to-favorite="handlerAddToFavorite"
-      @remove-favorite="handlerRemoveFromFavorite" />
+    <PopupContent v-if="init" :entry-memory-options="options?.memory" :sizeStorage="sizeStorage" :detailsItems="details"
+      :hidePopup="hidePopup" :show="show" @close="togglePopup()" @hide-popup-to-button="hidePopupToButton"
+      @delete-item-action="handlerDeleteListItem" @save-edit="handlerSaveEditItem"
+      @add-to-favorite="handlerAddToFavorite" @remove-favorite="handlerRemoveFromFavorite"
+      @save-parse-image="handlerSaveParseImage" />
 
     <!-- BUTTON HIDE POPUP -->
     <button v-if="hidePopup" class="open-button flex w-10 h-10 rounded-full shadow cursor-pointer border-none"

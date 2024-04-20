@@ -24,8 +24,9 @@ const { item } = toRefs(props);
 const hoverText = ref<boolean>(false);
 
 function handlerStartHoverText() {
+  hoverText.value = true;
   if (item.value?.value?.length > 46) {
-    hoverText.value = true;
+
     emit('preview-tooltip', { value: getTooltipText(), enable: true });
   }
 }
@@ -47,21 +48,35 @@ function handlerFavorite(item: any) {
   }
 }
 
+function handlerClickLinkPreview(link: string) {
+ if(!link) {
+  return;
+ }
+  window.open(link, '_blank');
+  console.log('LINK CLICK',link)
+}
+
 onMounted(() => {
 })
 
 </script>
 
 <template>
-  <li class="details-block-list__item" :class='{ "favorite-item": item.favorite }'>
+  <li @mouseover="handlerStartHoverText" @mouseleave="handlerEndHoverText" class="details-block-list__item"
+    :class='{ "favorite-item": item.favorite }'>
     <svg class="details-block-list__item-marker" xmlns=" http://www.w3.org/2000/svg" width="16" height="16"
       viewBox="0 0 16 16">
       <path fill="#d3ac13" d="M4 8a4 4 0 1 1 8 0a4 4 0 0 1-8 0m4-2.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5" />
     </svg>
 
-    <span @mouseover="handlerStartHoverText" @mouseleave="handlerEndHoverText"
-      class="text details-block-list__item-text">
+    <span v-if="!hoverText || !item.location && !item.action" class="text details-block-list__item-text">
       {{ item.value }}
+    </span>
+
+    <span @click="() => handlerClickLinkPreview(item.location)" target="_blank"
+      v-if="hoverText && item.location || hoverText && item.action" class="text details-block-list__item-text"
+      :class="{ 'link-preview': item.location, 'parse-info': item.action }">
+      {{ item.location ? item.location : 'PARSE FROM IMAGE' }}
     </span>
 
     <div class="details-block-list__item-actions">
@@ -131,6 +146,23 @@ onMounted(() => {
 
 .favorite-item {
   border-left: 3px solid #d9223d
+}
+
+.details-block-list__item .link-preview {
+  cursor: pointer;
+  color: #d9223d !important;
+  font-weight: 600;
+}
+
+.details-block-list__item .parse-info {
+  color: #d3ac13 !important;
+  font-weight: 600;
+}
+
+.details-block-list__item a.link-preview {
+  cursor: pointer;
+  color: #d9223d;
+  font-weight: 600;
 }
 
 .details-block-list__item:hover .details-block-list__item-actions {

@@ -82,7 +82,7 @@ onMessage('set-notification', (message) => {
   Notification(data as any);
 })
 
-onMessage('save-copy-data', async(message) => {
+const handlerCreateItem = async (message: any) => {
   const { data } = message;
   const saveArray: any[] = JSON.parse(JSON.stringify(storageCopy.value));
 
@@ -113,7 +113,7 @@ onMessage('save-copy-data', async(message) => {
   if (parentIdx === -1) {
     const parent = {
       key,
-      items:[newDataItem],
+      items: [newDataItem],
       id: `${uniqid()}-${Date.now()}`,
     }
     saveArray.push(parent);
@@ -122,7 +122,7 @@ onMessage('save-copy-data', async(message) => {
     parentItem.items.push(newDataItem);
     saveArray.splice(parentIdx, 1, parentItem);
   }
-  
+
   const usedSize = getStringMemorySize(JSON.stringify(saveArray));
 
   const autoClearEnable = optionsStorage.value?.memory?.['auto-clear-last'];
@@ -135,13 +135,13 @@ onMessage('save-copy-data', async(message) => {
     return {
       data: storageCopy.value,
       size: getStringMemorySize(JSON.stringify(storageCopy.value)),
-      error: {type: 'memory', message: 'end limit memory'}
+      error: { type: 'memory', message: 'end limit memory' }
     }
-  } 
+  }
 
   let needRemoveFavorite = false;
-  
-  if(usedSize >= LIMIT_STORAGE && autoClearEnable) { 
+
+  if (usedSize >= LIMIT_STORAGE && autoClearEnable) {
     // CLEARED LAST ELEMENT 
     needRemoveFavorite = autoClearOldItems(saveArray);
   }
@@ -162,13 +162,25 @@ onMessage('save-copy-data', async(message) => {
 
   (storageCopy.value as any) = saveArray;
   console.log('save-copy-data', newDataItem, 'usedSize>>>>', usedSize)
+
+  if (data.action === 'parse-image') {
+    Notification({
+      title: 'Save success!',
+      message: `New value: ${data.value?.split(0, 10)}...`
+    })
+    console.log('save-parse-image', newDataItem, 'usedSize>>>>', usedSize)
+  }
   browser.action.setBadgeText({ text: 'ON' });
   return {
     data: saveArray,
     size: usedSize,
   }
-  
-})
+
+}
+
+onMessage('save-copy-data', handlerCreateItem );
+
+onMessage('save-parse-image', handlerCreateItem);
 
 onMessage('delete-item', (message: any) => {
   const { data } = message;
