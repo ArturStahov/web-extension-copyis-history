@@ -23,11 +23,15 @@ const { item } = toRefs(props);
 
 const hoverText = ref<boolean>(false);
 
-function handlerStartHoverText() {
+const listItemElement = ref<any>(null)
+
+function handlerStartHoverText(event: any) {
+  const rect = listItemElement.value?.getBoundingClientRect();
+
   hoverText.value = true;
   if (item.value?.value?.length > 46) {
 
-    emit('preview-tooltip', { value: getTooltipText(), enable: true });
+    emit('preview-tooltip', { value: getTooltipText(), enable: true, position: rect?.top  });
   }
 }
 
@@ -37,7 +41,7 @@ function getTooltipText() {
 
 function handlerEndHoverText() {
   hoverText.value = false;
-  emit('preview-tooltip', { value: '', enable: false });
+  emit('preview-tooltip', { value: '', enable: false, position: '' });
 }
 
 function handlerFavorite(item: any) {
@@ -56,14 +60,19 @@ function handlerClickLinkPreview(link: string) {
   console.log('LINK CLICK',link)
 }
 
+function handlerAction(type: string) {
+  emit('preview-tooltip', { value: '', enable: false, position: '' });
+  emit('details-list-action', { action: type, item: item.value })
+}
+
 onMounted(() => {
 })
 
 </script>
 
 <template>
-  <li @mouseover="handlerStartHoverText" @mouseleave="handlerEndHoverText" class="details-block-list__item"
-    :class='{ "favorite-item": item.favorite }'>
+  <li ref="listItemElement" @mouseover="handlerStartHoverText" @mouseleave="handlerEndHoverText"
+    class="details-block-list__item" :class='{ "favorite-item": item.favorite }'>
     <svg class="details-block-list__item-marker" xmlns=" http://www.w3.org/2000/svg" width="16" height="16"
       viewBox="0 0 16 16">
       <path fill="#d3ac13" d="M4 8a4 4 0 1 1 8 0a4 4 0 0 1-8 0m4-2.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5" />
@@ -92,22 +101,20 @@ onMounted(() => {
             d="m5.8 21l1.6-7L2 9.2l7.2-.6L12 2l2.8 6.6l7.2.6l-3.2 2.8H18c-3.1 0-5.6 2.3-6 5.3zm8.2-4v2h8v-2z" />
         </svg>
       </ButtonComponent>
-      <ButtonComponent :tooltip="'edit'" data-type="edit"
-        @click="(event) => emit('details-list-action', { action: 'edit', item })">
+      <ButtonComponent :tooltip="'edit'" data-type="edit" @click="() => handlerAction('edit')">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <path fill="#0d9488"
             d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-1.9l10-10V8l-6-6zm7 1.5L18.5 9H13zm7.1 9.5c-.1 0-.3.1-.4.2l-1 1l2.1 2.1l1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-2 1.8L12 20.9V23h2.1l6.1-6.1z" />
         </svg>
       </ButtonComponent>
-      <ButtonComponent :tooltip="'copy'" data-type="copy"
-        @click="() => emit('details-list-action', { action: 'copy', item })">
+      <ButtonComponent :tooltip="'copy'" data-type="copy" @click="() => handlerAction('copy')">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32">
           <path fill="#0d9488"
             d="M8.5 5.25A3.25 3.25 0 0 1 11.75 2h12A3.25 3.25 0 0 1 27 5.25v18a3.25 3.25 0 0 1-3.25 3.25h-12a3.25 3.25 0 0 1-3.25-3.25zM5 8.75c0-1.352.826-2.511 2-3.001v17.75a4.5 4.5 0 0 0 4.5 4.5h11.751a3.25 3.25 0 0 1-3.001 2H11.5A6.5 6.5 0 0 1 5 23.5z" />
         </svg>
       </ButtonComponent>
       <ButtonComponent :tooltip="'delete'" data-type="delete"
-        @click="() => { emit('details-list-action', { action: 'delete', item }) }">
+        @click="() => handlerAction('delete')">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <g fill="none">
             <path fill="#0d9488" d="M9 7h9v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7z" />

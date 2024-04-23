@@ -83,7 +83,7 @@ const typeList = ref<'main' | 'favorite' | 'memory' | 'parse-image'>('main');
 
 const editItem = ref<any|null>(null);
 
-const tooltipPreview = ref<any>({ value: '', enable: false });
+const tooltipPreview = ref<any>({ value: '', enable: false, position: '' });
 
 function getRenderSortedList(detailsList: any[],params:string) {
   return detailsList.sort((a, b) => b[params].localeCompare(a[params]))
@@ -120,8 +120,11 @@ function handlerItemAction(event: { action: string, item: any, $event?:any}) {
   actions[event.action] ? actions[event.action]() : console.log('Not found event');
 }
 
-function handlerPreviewTooltip(options: { value: string, enable: boolean }) {
-  tooltipPreview.value = options;
+function handlerPreviewTooltip(options: { value: string, enable: boolean, position: string }) {
+  tooltipPreview.value = {
+    ...options,
+    position: Number(options.position) + 20,
+  };
 }
 
 function getFavoriteList(detailsItems:any[]) {
@@ -156,7 +159,9 @@ watch(entryMemoryOptions,() => {
   <div class="popup-content text-gray-800 shadow w-max h-min" p="x-2 y-2" m="y-auto r-2" v-show="show && !hidePopup">
 
     <!-- TOOLTIP PREVIEW-->
-    <div v-if="tooltipPreview.enable" class="tooltip-preview text">
+    <div v-if="tooltipPreview.enable"
+      :style="`top: ${tooltipPreview.position ? tooltipPreview.position : 80}px;`"
+      class="tooltip-preview text">
       {{ tooltipPreview.value }}
       <svg class="tooltip-preview-arrow" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
         <path fill="#2b2b2b"
@@ -289,7 +294,8 @@ watch(entryMemoryOptions,() => {
   position: absolute;
   z-index: 99999999;
   right: -33px;
-  top: 0%;
+  top: 46%;
+  transform: translateY(-50%);
 }
 
 .popup-content .header {

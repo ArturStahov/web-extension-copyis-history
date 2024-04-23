@@ -49,7 +49,7 @@ function handlerClickLinkPreview(link: string) {
 
 <template>
   <div class="content-editor">
-    <p class="content-editor__section-title">Information</p>
+    <p class="content-editor__section-title">Details</p>
     <ul class="content-editor_item-info-list">
       <li v-if="editItem.location" @click="handlerClickLinkPreview(editItem.location)"
         class="content-editor_item-info-list-item">
