@@ -3,6 +3,7 @@ import { useToggle } from '@vueuse/core'
 import 'uno.css'
 import { ref, onMounted, reactive } from 'vue'
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
+import { getPastePopupPosition } from '~/services/pastePopup'
 
 interface ICopyItem { value: string, location?: string, time: string, key: string, id: string, favorite?: boolean, action?: string };
 interface IDataItem { key: string, items: ICopyItem[], id: string}
@@ -12,14 +13,39 @@ interface IInitResponseData { size: string, data: IDataItem[] }
 const [show, togglePopup] = useToggle(true);
 
 const hidePopup = ref<boolean>(true);
-
 const details = ref<null | IDataItem[] >(null);
-
 const sizeStorage = ref<number>(0);
-
 const options = ref<any>(null);
-
 const init = ref<boolean>(false);
+const openPastePopup = ref<boolean>(false);
+const pastePopupRef = ref<any>(null);
+const elementToPasteValue = ref<any>(null);
+const correctCombinationKeyOpenPastePopup = ref<boolean>(false);
+
+const pastePopupPosition = reactive({
+  "left": 0,
+  "top": 0,
+})
+
+onMounted(async () => {
+  document.addEventListener("copy", handlerCopyText);
+  window.addEventListener("keydown", handlerKeyCombinationOpenPastePopup);
+  document.addEventListener('click', handlerConditionOpenPastePopup);
+
+  const initPayload = { location: window.location.href };
+  const res = await sendMessage('get-init-copy-data', initPayload, "background");
+
+  if (res) {
+    details.value = (res as any as IInitResponseData).data;
+    sizeStorage.value = Number((res as any as IInitResponseData).size);
+    console.log('INIT Details')
+  }
+
+  const data = await sendMessage('get-options', {}, "background");
+  options.value = data;
+  console.log('options.value>>>>', options.value)
+  init.value = true
+})
 
 onMessage('event-retry', async(response) => {
   const initPayload = { location: window.location.href };
@@ -56,25 +82,60 @@ const handlerCopyText = async(e: any) => {
   }
 }
 
-onMounted(async() => {
-  document.addEventListener("copy", handlerCopyText);
-  
-  const initPayload = { location: window.location.href };
-  const res = await sendMessage('get-init-copy-data', initPayload, "background");
-  
-  if(res) {
-    details.value = (res as any as IInitResponseData).data;
-    sizeStorage.value = Number((res as any as IInitResponseData).size);
-    console.log('INIT Details')
+function handlerKeyCombinationOpenPastePopup(e: any) {
+  const special = e.ctrlKey || e.shiftKey;
+  //const key = e.charCode || e.keyCode;
+  //const combo = special && key == 88;
+  if (!special) {
+    correctCombinationKeyOpenPastePopup.value = false;
+   return;
+  } 
+  correctCombinationKeyOpenPastePopup.value = true;
+}
+
+async function handlerConditionOpenPastePopup(event: any) {
+  if (!correctCombinationKeyOpenPastePopup.value || openPastePopup.value) {
+    return;
   }
+  const x = event.clientX;
+  const y = event.clientY;
 
-  const data = await sendMessage('get-options', {}, "background");
-  options.value = data;
-  console.log('options.value>>>>', options.value)
-  init.value = true
-})
+  Object.assign(pastePopupPosition, {
+    left: x + window.scrollX,
+    top: y + window.scrollY
+  });
 
-function hidePopupToButton() {
+  const position = getPastePopupPosition(x, y, pastePopupRef.value);
+  position && Object.assign(pastePopupPosition, position);
+  const element = document.elementFromPoint(x, y);
+  if (!element) return;
+  
+  const tagName = element.tagName.toLowerCase();
+  const conditionOpenPastePopup = tagName === 'input' || tagName === 'textarea';
+
+  if (conditionOpenPastePopup) {
+    openPastePopup.value = true;
+  } 
+  elementToPasteValue.value = element;
+}
+
+function actionClosePastePopup() {
+  elementToPasteValue.value = null;
+  openPastePopup.value = false;
+}
+
+function handlerPasteValueFromPastePopup(payload: {value: string}) {
+  const nodeElement = elementToPasteValue.value;
+  nodeElement.value = payload.value;
+  console.log('PASTE EVENT>>>', payload, nodeElement)
+  actionClosePastePopup();
+}
+
+const visiblePastePopup = () => {
+  return openPastePopup.value ? '1' : '0';
+}
+
+function hideContentPopupToButton() {
   hidePopup.value = true;
 }
 
@@ -112,7 +173,7 @@ async function handlerRemoveFromFavorite(item: any) {
   }
 }
 
-async function openPopupButton() {
+async function openContentPopupButton() {
   try {
     const initPayload = { location: window.location.href };
     const res = await sendMessage('get-copy-data', initPayload, "background");
@@ -149,16 +210,18 @@ async function handlerSaveParseImage(data: any) {
 
 <template>
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
+    <PastePopup ref="pastePopupRef" :visible="visiblePastePopup()" :position="pastePopupPosition"
+      :detailsItems="details" @closePastePopup="actionClosePastePopup" @paste-value="handlerPasteValueFromPastePopup" />
     <!-- POPUP -->
     <PopupContent v-if="init" :entry-memory-options="options?.memory" :sizeStorage="sizeStorage" :detailsItems="details"
-      :hidePopup="hidePopup" :show="show" @close="togglePopup()" @hide-popup-to-button="hidePopupToButton"
+      :hidePopup="hidePopup" :show="show" @close="togglePopup()" @hide-popup-to-button="hideContentPopupToButton"
       @delete-item-action="handlerDeleteListItem" @save-edit="handlerSaveEditItem"
       @add-to-favorite="handlerAddToFavorite" @remove-favorite="handlerRemoveFromFavorite"
       @save-parse-image="handlerSaveParseImage" />
 
     <!-- BUTTON HIDE POPUP -->
     <button v-if="hidePopup" class="open-button flex w-10 h-10 rounded-full shadow cursor-pointer border-none"
-      bg="teal-600 hover:teal-700" @click="openPopupButton()">
+      bg="teal-600 hover:teal-700" @click="openContentPopupButton()">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
         <path fill="#0a0a0a"
           d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm6.197 2.964C9.622 7.739 9 8.24 9 9s.622 1.26 1.197 1.536c.622.297 1.437.464 2.303.464s1.681-.167 2.303-.464C15.378 10.261 16 9.76 16 9s-.621-1.26-1.197-1.536C14.18 7.167 13.366 7 12.5 7s-1.681.167-2.303.464m5.798 3.426C15.17 11.567 13.91 12 12.5 12s-2.67-.433-3.495-1.11A1 1 0 0 0 9 11c0 1.105 1.567 2 3.5 2s3.5-.895 3.5-2q0-.055-.005-.11M12.5 14c-1.41 0-2.67-.433-3.495-1.11A1 1 0 0 0 9 13c0 1.105 1.567 2 3.5 2s3.5-.895 3.5-2a1 1 0 0 0-.005-.11C15.17 13.567 13.91 14 12.5 14" />
@@ -169,6 +232,7 @@ async function handlerSaveParseImage(data: any) {
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
 
 .wrapper-main {
   position: absolute;
