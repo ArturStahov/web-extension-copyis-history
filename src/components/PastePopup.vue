@@ -56,9 +56,9 @@ function getRenderFavoriteList(detailsItems: any[]) {
 
 <template>
   <div class="paste-popup"
-    :style="`opacity:${visible};display: flex;left: ${position?.left}px; top: ${position?.top}px`">
+    :style="`height:${visible === '1' ? 'auto' : 0}px;opacity:${visible};display: flex;left: ${position?.left}px; top: ${position?.top}px`">
     <h2 class="paste-popup-title text"> FAVORITE LIST</h2>
-    <p class="error-text text" v-if="textError" > {{ textError }}</p>
+    <p class="error-text text" v-if="textError"> {{ textError }}</p>
     <div class="popup-main" v-if="detailsItems && detailsItems.length">
       <div class=" popup-main__scroll-wrapper">
         <div class="details-favorite">
