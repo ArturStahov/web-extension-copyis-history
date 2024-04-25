@@ -122,6 +122,7 @@ async function handlerConditionOpenPastePopup(event: any) {
 function actionClosePastePopup() {
   elementToPasteValue.value = null;
   openPastePopup.value = false;
+  correctCombinationKeyOpenPastePopup.value = false;
 }
 
 function handlerPasteValueFromPastePopup(payload: {value: string}) {
