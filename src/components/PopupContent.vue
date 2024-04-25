@@ -2,7 +2,7 @@
 import 'uno.css'
 import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
-
+import { getRenderSortedList, getFavoriteList } from '~/services/list-service';
 
 const emit = defineEmits<{
   (e: 'close',): void,
@@ -85,8 +85,8 @@ const editItem = ref<any|null>(null);
 
 const tooltipPreview = ref<any>({ value: '', enable: false, position: '' });
 
-function getRenderSortedList(detailsList: any[],params:string) {
-  return detailsList.sort((a, b) => b[params].localeCompare(a[params]))
+function getSortedList(detailsList: any[],params:string) {
+  return getRenderSortedList(detailsList, params)
 }
 
 function handlerCloseEditor() {
@@ -127,13 +127,8 @@ function handlerPreviewTooltip(options: { value: string, enable: boolean, positi
   };
 }
 
-function getFavoriteList(detailsItems:any[]) {
-  const all:any[] = [];
-   detailsItems.forEach(parent => {
-       const parentFavorites = parent.items.filter((item: any )=> item.favorite);
-       all.push(...parentFavorites);
-  });
-  return getRenderSortedList(all,'id');
+function getRenderFavoriteList(detailsItems:any[]) {
+  return getFavoriteList(detailsItems);
 }
 
 async function handlerSaveMemoryOptions(options: {[key: string]: string}) {
@@ -159,8 +154,7 @@ watch(entryMemoryOptions,() => {
   <div class="popup-content text-gray-800 shadow w-max h-min" p="x-2 y-2" m="y-auto r-2" v-show="show && !hidePopup">
 
     <!-- TOOLTIP PREVIEW-->
-    <div v-if="tooltipPreview.enable"
-      :style="`top: ${tooltipPreview.position ? tooltipPreview.position : 80}px;`"
+    <div v-if="tooltipPreview.enable" :style="`top: ${tooltipPreview.position ? tooltipPreview.position : 80}px;`"
       class="tooltip-preview text">
       {{ tooltipPreview.value }}
       <svg class="tooltip-preview-arrow" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
@@ -185,10 +179,10 @@ watch(entryMemoryOptions,() => {
       <div class="popup-main__scroll-wrapper">
         <!-- MAIN LIST -->
         <div v-if="typeList === 'main'" class="main-list-wrapper">
-          <div v-for="parent in getRenderSortedList(detailsItems,'id')" :key="parent.id" class="details-block">
+          <div v-for="parent in getSortedList(detailsItems,'id')" :key="parent.id" class="details-block">
             <h2 class="details-block__title text"> {{ parent.key }}</h2>
             <ul class="details-block-list">
-              <PopupContentListItem v-for="item in getRenderSortedList(parent.items, 'id')" :key="item.id" :item="item"
+              <PopupContentListItem v-for="item in getSortedList(parent.items, 'id')" :key="item.id" :item="item"
                 @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
             </ul>
           </div>
@@ -196,7 +190,7 @@ watch(entryMemoryOptions,() => {
         <!-- FAVORITE LIST -->
         <div v-if="typeList === 'favorite'" class="details-favorite">
           <ul class="details-block-list">
-            <PopupContentListItem v-for="item in getFavoriteList(detailsItems)" :key="item.id" :item="item"
+            <PopupContentListItem v-for="item in getRenderFavoriteList(detailsItems)" :key="item.id" :item="item"
               @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
           </ul>
         </div>

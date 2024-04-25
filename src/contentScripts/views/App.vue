@@ -112,7 +112,7 @@ async function handlerConditionOpenPastePopup(event: any) {
   
   const tagName = element.tagName.toLowerCase();
   const conditionOpenPastePopup = tagName === 'input' || tagName === 'textarea';
-
+  
   if (conditionOpenPastePopup) {
     openPastePopup.value = true;
   } 
@@ -220,10 +220,9 @@ async function handlerSaveParseImage(data: any) {
       @save-parse-image="handlerSaveParseImage" />
 
     <!-- BUTTON HIDE POPUP -->
-    <button v-if="hidePopup" class="open-button flex w-10 h-10 rounded-full shadow cursor-pointer border-none"
-      bg="teal-600 hover:teal-700" @click="openContentPopupButton()">
+    <button v-if="hidePopup" class="open-button flex shadow cursor-pointer" @click="openContentPopupButton()">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
-        <path fill="#0a0a0a"
+        <path fill="#0d9488"
           d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm6.197 2.964C9.622 7.739 9 8.24 9 9s.622 1.26 1.197 1.536c.622.297 1.437.464 2.303.464s1.681-.167 2.303-.464C15.378 10.261 16 9.76 16 9s-.621-1.26-1.197-1.536C14.18 7.167 13.366 7 12.5 7s-1.681.167-2.303.464m5.798 3.426C15.17 11.567 13.91 12 12.5 12s-2.67-.433-3.495-1.11A1 1 0 0 0 9 11c0 1.105 1.567 2 3.5 2s3.5-.895 3.5-2q0-.055-.005-.11M12.5 14c-1.41 0-2.67-.433-3.495-1.11A1 1 0 0 0 9 13c0 1.105 1.567 2 3.5 2s3.5-.895 3.5-2a1 1 0 0 0-.005-.11C15.17 13.567 13.91 14 12.5 14" />
       </svg>
     </button>
@@ -242,13 +241,26 @@ async function handlerSaveParseImage(data: any) {
 }
 
 .open-button {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border: 1px solid #1a1919;
+  width: 35px;
+  height: 35px;
+  opacity: 0.3;
+  filter: grayscale(0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   pointer-events: all !important;
   position: fixed;
-  top: 5px;
-  right: 5px;
+  top: 10%;
+  right: 6px;
   z-index: 999999999999;
+  transition: all 0.3s linear;
+}
+
+.open-button:hover {
+  opacity: 0.8;
+  filter: grayscale(0);
 }
 </style>
