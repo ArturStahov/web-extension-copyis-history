@@ -127,7 +127,22 @@ function actionClosePastePopup() {
 
 function handlerPasteValueFromPastePopup(payload: {value: string}) {
   const nodeElement = elementToPasteValue.value;
-  nodeElement.value = payload.value;
+  if (!nodeElement) {
+    return;
+  }
+  
+  nodeElement.addEventListener('paste', (event: any) => {
+    nodeElement.value = payload.value;
+    nodeElement.dispatchEvent(new Event('input'));
+  })
+
+  const pasteEvent = new Event('paste', {
+    bubbles: true,
+    cancelable: true,
+  });
+
+  nodeElement.dispatchEvent(pasteEvent);
+  
   console.log('PASTE EVENT>>>', payload, nodeElement)
   actionClosePastePopup();
 }
