@@ -29,7 +29,8 @@ const pastePopupPosition = reactive({
 
 onMounted(async () => {
   document.addEventListener("copy", handlerCopyText);
-  window.addEventListener("keydown", handlerKeyCombinationOpenPastePopup);
+  window.addEventListener("keydown", handlerKeyCombinationDownOpenPastePopup);
+  window.addEventListener("keyup", handlerKeyCombinationUpOpenPastePopup);
   document.addEventListener('click', handlerConditionOpenPastePopup);
 
   const initPayload = { location: window.location.href };
@@ -82,8 +83,8 @@ const handlerCopyText = async(e: any) => {
   }
 }
 
-function handlerKeyCombinationOpenPastePopup(e: any) {
-  const special = e.ctrlKey || e.shiftKey;
+function handlerKeyCombinationDownOpenPastePopup(e: any) {
+  const special = e.shiftKey;
   //const key = e.charCode || e.keyCode;
   //const combo = special && key == 88;
   if (!special) {
@@ -91,6 +92,14 @@ function handlerKeyCombinationOpenPastePopup(e: any) {
    return;
   } 
   correctCombinationKeyOpenPastePopup.value = true;
+}
+
+function handlerKeyCombinationUpOpenPastePopup(e: any) {
+  const special = e.keyCode === 16 || e.key === "Shift"
+
+  if (special) {
+    correctCombinationKeyOpenPastePopup.value = false;
+  }
 }
 
 async function handlerConditionOpenPastePopup(event: any) {
