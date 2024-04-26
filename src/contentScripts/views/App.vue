@@ -226,8 +226,9 @@ async function handlerSaveParseImage(data: any) {
 
 <template>
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
-    <PastePopup ref="pastePopupRef" :visible="visiblePastePopup()" :position="pastePopupPosition"
-      :detailsItems="details" @closePastePopup="actionClosePastePopup" @paste-value="handlerPasteValueFromPastePopup" />
+    <PastePopup ref="pastePopupRef" :visible="visiblePastePopup()"
+      :position="pastePopupPosition" :detailsItems="details" @closePastePopup="actionClosePastePopup"
+      @paste-value="handlerPasteValueFromPastePopup" />
     <!-- POPUP -->
     <PopupContent v-if="init" :entry-memory-options="options?.memory" :sizeStorage="sizeStorage" :detailsItems="details"
       :hidePopup="hidePopup" :show="show" @close="togglePopup()" @hide-popup-to-button="hideContentPopupToButton"
@@ -253,7 +254,7 @@ async function handlerSaveParseImage(data: any) {
   position: absolute;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 .open-button {

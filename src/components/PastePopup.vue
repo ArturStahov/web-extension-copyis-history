@@ -56,7 +56,13 @@ function getRenderFavoriteList(detailsItems: any[]) {
 
 <template>
   <div class="paste-popup"
-    :style="`height:${visible === '1' ? 'auto' : 0}px;opacity:${visible};display: flex;left: ${position?.left}px; top: ${position?.top}px`">
+    :style="`height:${visible === '1' ? 'auto' : 0}px;opacity:${visible};display: flex;left: ${visible === '1' ? position?.left +'px' : '-500%'}; top: ${position?.top}px`">
+    <ButtonComponent class="paste-popup-close" @click="emit('closePastePopup')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-2 -2 24 24">
+        <path fill="#0d9488"
+          d="M4 0h12a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4m0 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm7.414 8l2.829 2.828a1 1 0 0 1-1.415 1.415L10 11.414l-2.828 2.829a1 1 0 1 1-1.415-1.415L8.586 10L5.757 7.172a1 1 0 0 1 1.415-1.415L10 8.586l2.828-2.829a1 1 0 0 1 1.415 1.415z" />
+      </svg>
+    </ButtonComponent>
     <h2 class="paste-popup-title text"> FAVORITE LIST</h2>
     <p class="error-text text" v-if="textError"> {{ textError }}</p>
     <div class="popup-main" v-if="detailsItems && detailsItems.length">
@@ -94,9 +100,15 @@ function getRenderFavoriteList(detailsItems: any[]) {
   border: none;
   border-radius: 5px;
   box-shadow: 1px 1px 5px 1px #ffffff57;
-  z-index: 2147483647;
+  z-index: 1147483645;
   opacity: 0;
   transform: translate3d(0, 0, 0);
+}
+
+.paste-popup-close {
+  position: absolute;
+  right: 5px;
+  top: 5px;
 }
 
 .paste-popup .paste-popup-title {
