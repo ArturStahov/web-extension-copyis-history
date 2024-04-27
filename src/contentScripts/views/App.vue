@@ -279,7 +279,7 @@ async function handlerSaveParseImage(data: any) {
   align-items: center;
   pointer-events: all !important;
   position: fixed;
-  top: 10%;
+  bottom: 10%;
   right: 6px;
   z-index: 999999999999;
   transition: all 0.3s linear;
