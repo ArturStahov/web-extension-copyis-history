@@ -16,6 +16,10 @@ const props = defineProps({
         time: ''
       }
     }
+  },
+  isFavoriteList: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -65,6 +69,16 @@ function handlerAction(type: string) {
   emit('details-list-action', { action: type, item: item.value })
 }
 
+function getItemActionValue(action: string) {
+  if (action === 'parse-image') {
+    return 'PARSE FROM IMAGE';
+  }
+  if (action === 'custom-item') {
+    return 'CUSTOM ITEM'
+  }
+  return '';
+}
+
 onMounted(() => {
 })
 
@@ -72,7 +86,7 @@ onMounted(() => {
 
 <template>
   <li ref="listItemElement" @mouseover="handlerStartHoverText" @mouseleave="handlerEndHoverText"
-    class="details-block-list__item" :class='{ "favorite-item": item.favorite }'>
+    class="details-block-list__item" :class='{ "favorite-item": item.favorite && !isFavoriteList }'>
     <svg class="details-block-list__item-marker" xmlns=" http://www.w3.org/2000/svg" width="16" height="16"
       viewBox="0 0 16 16">
       <path fill="#d3ac13" d="M4 8a4 4 0 1 1 8 0a4 4 0 0 1-8 0m4-2.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5" />
@@ -85,7 +99,7 @@ onMounted(() => {
     <span @click="() => handlerClickLinkPreview(item.location)" target="_blank"
       v-if="hoverText && item.location || hoverText && item.action" class="text details-block-list__item-text"
       :class="{ 'link-preview': item.location, 'parse-info': item.action }">
-      {{ item.location ? item.location : 'PARSE FROM IMAGE' }}
+      {{ item.location ? item.location : getItemActionValue(item.action) }}
     </span>
 
     <div class="details-block-list__item-actions">
@@ -113,8 +127,7 @@ onMounted(() => {
             d="M8.5 5.25A3.25 3.25 0 0 1 11.75 2h12A3.25 3.25 0 0 1 27 5.25v18a3.25 3.25 0 0 1-3.25 3.25h-12a3.25 3.25 0 0 1-3.25-3.25zM5 8.75c0-1.352.826-2.511 2-3.001v17.75a4.5 4.5 0 0 0 4.5 4.5h11.751a3.25 3.25 0 0 1-3.001 2H11.5A6.5 6.5 0 0 1 5 23.5z" />
         </svg>
       </ButtonComponent>
-      <ButtonComponent :tooltip="'delete'" data-type="delete"
-        @click="() => handlerAction('delete')">
+      <ButtonComponent :tooltip="'delete'" data-type="delete" @click="() => handlerAction('delete')">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <g fill="none">
             <path fill="#0d9488" d="M9 7h9v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7z" />
@@ -141,6 +154,18 @@ onMounted(() => {
   list-style: none;
   align-items: center;
   margin-bottom: 10px;
+  transition: all 0.3s linear;
+}
+
+.details-block-list__item:hover { 
+ transform: scaleY(1.05);
+ border-top-color: rgb(226, 219, 219);
+ border-bottom-color: rgb(226, 219, 219);
+ border-right-color: rgb(226, 219, 219);
+}
+
+.details-block-list__item:hover .link-preview {
+ font-weight: 600;
 }
 
 .details-block-list__item-marker {

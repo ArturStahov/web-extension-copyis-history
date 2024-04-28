@@ -70,8 +70,8 @@ function getRenderFavoriteList(detailsItems: any[]) {
         <div class="details-favorite">
           <ul class="details-block-list">
             <li @click="() => handlerSelectValue(item)" :class="{ 'selected-item': isSelected(item.id) }"
-              class="details-block-list__item" v-for="item in getRenderFavoriteList(detailsItems) " :key="item.id">
-              <span class="details-block-list__item-value"> {{ item.value }}</span>
+              class="paste-popup-block-list__item" v-for="item in getRenderFavoriteList(detailsItems) " :key="item.id">
+              <span class="paste-popup-block-list__item-value"> {{ item.value }}</span>
             </li>
           </ul>
         </div>
@@ -159,7 +159,7 @@ function getRenderFavoriteList(detailsItems: any[]) {
   padding-right: 10px;
 }
 
-.paste-popup .details-block-list__item {
+.paste-popup .paste-popup-block-list__item {
   cursor: pointer;
   position: relative;
   border: 1px solid #8b888842;
@@ -171,11 +171,11 @@ function getRenderFavoriteList(detailsItems: any[]) {
   margin-bottom: 10px;
 }
 
-.paste-popup .details-block-list__item.selected-item {
+.paste-popup .paste-popup-block-list__item.selected-item {
   border: 2px solid #d3ac13;
 }
 
-.paste-popup .details-block-list__item-value {
+.paste-popup .paste-popup-block-list__item-value {
   color: #ffffff;
   font-size: 12px;
   width: 290px;

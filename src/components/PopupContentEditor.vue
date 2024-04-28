@@ -37,6 +37,16 @@ function handlerSubmit() {
   }
 }
 
+function getItemActionValue(action: string) {
+  if (action === 'parse-image') {
+    return 'PARSE FROM IMAGE';
+  }
+  if (action === 'custom-item') {
+    return 'CUSTOM ITEM'
+  }
+  return '';
+}
+
 function handlerClickLinkPreview(link: string) {
   if (!link) {
     return;
@@ -63,8 +73,9 @@ function handlerClickLinkPreview(link: string) {
         </svg>
       </li>
       <li v-if="editItem.action" class="content-editor_item-info-list-item">
-        <span class="list-item_title text">Resource: </span><span class="list-item_value text list-item_value-parse-image">
-          parse from image
+        <span class="list-item_title text">Resource: </span><span
+          class="list-item_value text list-item_value-parse-image">
+          {{ getItemActionValue(editItem.action) }}
         </span>
       </li>
       <li class="content-editor_item-info-list-item">

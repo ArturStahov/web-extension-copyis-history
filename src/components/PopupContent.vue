@@ -11,8 +11,9 @@ const emit = defineEmits<{
   (e: 'save-edit',item: any): void,
   (e: 'preview-tooltip', options: any): void,
   (e: 'add-to-favorite', item: any): void,
-  (e: 'remove-favorite', item: any): void
-  (e: 'save-parse-image', payload: any):void
+  (e: 'remove-favorite', item: any): void,
+  (e: 'save-parse-image', payload: any): void,
+  (e: 'save-custom-item', payload: any): void,
 }>();
 
 const props = defineProps({
@@ -77,6 +78,8 @@ const listTabsActions = [
 
 const enableEditor = ref<boolean>(false);
 
+const enableCustomCrateItem = ref<boolean>(false);
+
 const memoryOptions = ref<any>({});
 
 const typeList = ref<'main' | 'favorite' | 'memory' | 'parse-image'>('main');
@@ -92,6 +95,7 @@ function getSortedList(detailsList: any[],params:string) {
 function handlerCloseEditor() {
   enableEditor.value = false;
   editItem.value = null;
+  enableCustomCrateItem.value = false;
 }
 
 function handlerOpenEditor(item: any) {
@@ -141,6 +145,15 @@ async function handlerSaveParseImage(data: {value: string}) {
   emit('save-parse-image', data);
 }
 
+function handlerOpenCreateCustomItem() {
+  enableCustomCrateItem.value = true;
+}
+
+function handlerSaveCustomItem(item: any) {
+  emit('save-custom-item', item);
+  enableCustomCrateItem.value = false;
+}
+
 onMounted(async() => {
   memoryOptions.value = entryMemoryOptions.value;
 })
@@ -163,10 +176,11 @@ watch(entryMemoryOptions,() => {
       </svg>
     </div>
 
-    <PopupContentHeader :enableEditor="enableEditor" @close-editor="handlerCloseEditor"
-      @hide-popup-to-button="emit('hide-popup-to-button')" @close="emit('close')" />
+    <PopupContentHeader :enableEditor="enableEditor || enableCustomCrateItem" @close-editor="handlerCloseEditor"
+      @hide-popup-to-button="emit('hide-popup-to-button')" @close="emit('close')"
+      @create-custom="handlerOpenCreateCustomItem" />
 
-    <div v-if="!enableEditor" class="list-tabs">
+    <div v-if="!enableEditor && !enableCustomCrateItem" class="list-tabs">
       <div v-for="(tab,idx) in listTabsActions" @click.native="tab.action" :key="idx"
         :class="{'active-tab': tab.code === typeList}" class="list-tabs-button">
         <span class="tab-icon" v-html="tab.icon"></span>
@@ -175,7 +189,7 @@ watch(entryMemoryOptions,() => {
     </div>
 
     <!-- MAIN SCREEN -->
-    <div v-if="detailsItems && detailsItems.length && !enableEditor" class="popup-main">
+    <div v-if="detailsItems && detailsItems.length && !enableEditor && !enableCustomCrateItem" class="popup-main">
       <div class="popup-main__scroll-wrapper">
         <!-- MAIN LIST -->
         <div v-if="typeList === 'main'" class="main-list-wrapper">
@@ -191,7 +205,8 @@ watch(entryMemoryOptions,() => {
         <div v-if="typeList === 'favorite'" class="details-favorite">
           <ul class="details-block-list">
             <PopupContentListItem v-for="item in getRenderFavoriteList(detailsItems)" :key="item.id" :item="item"
-              @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
+              :isFavoriteList="true" @details-list-action="handlerItemAction"
+              @preview-tooltip="handlerPreviewTooltip" />
           </ul>
         </div>
         <!-- PARSE IMAGE -->
@@ -208,6 +223,10 @@ watch(entryMemoryOptions,() => {
 
     <!-- EDITOR -->
     <PopupContentEditor :editItem="editItem" v-if="enableEditor" @save-edit="(item) => emit('save-edit',item)" />
+
+    <!-- CUSTOM-CREATE ITEM -->
+    <PopupContentCustomCreateItem v-if="enableCustomCrateItem"
+      @save-custom-item="handlerSaveCustomItem" />
 
     <!-- START SCREEN -->
     <div v-if="!detailsItems || !detailsItems?.length" class="start-screen">
@@ -238,7 +257,7 @@ watch(entryMemoryOptions,() => {
 }
 
 .list-tabs {
-  margin-top: 10px;
+  margin-top: 15px;
   margin-left: 12px;
   display: flex;
 }

@@ -166,9 +166,16 @@ const handlerCreateItem = async (message: any) => {
   if (data.action === 'parse-image') {
     Notification({
       title: 'Save success!',
-      message: `New value: ${data.value?.split(0, 10)}...`
+      message: `Value: ${data.value?.split(0, 10)}...`
     })
     console.log('save-parse-image', newDataItem, 'usedSize>>>>', usedSize)
+  }
+  if (data.action === 'custom-item') {
+    Notification({
+      title: 'Create success!',
+      message: `Value: ${data.value?.split(0, 10)}...`
+    })
+    console.log('save-custom-item', newDataItem, 'usedSize>>>>', usedSize)
   }
   browser.action.setBadgeText({ text: 'ON' });
   return {
@@ -177,6 +184,8 @@ const handlerCreateItem = async (message: any) => {
   }
 
 }
+
+onMessage('save-custom-item', handlerCreateItem )
 
 onMessage('save-copy-data', handlerCreateItem );
 

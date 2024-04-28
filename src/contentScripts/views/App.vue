@@ -8,7 +8,6 @@ import { getPastePopupPosition } from '~/services/pastePopup'
 interface ICopyItem { value: string, location?: string, time: string, key: string, id: string, favorite?: boolean, action?: string };
 interface IDataItem { key: string, items: ICopyItem[], id: string}
 interface ISaveResponseData { size: string, data: IDataItem[] }
-interface IInitResponseData { size: string, data: IDataItem[] }
 
 const [show, togglePopup] = useToggle(true);
 
@@ -37,8 +36,7 @@ onMounted(async () => {
   const res = await sendMessage('get-init-copy-data', initPayload, "background");
 
   if (res) {
-    details.value = (res as any as IInitResponseData).data;
-    sizeStorage.value = Number((res as any as IInitResponseData).size);
+    updateStateData(res as any as ISaveResponseData);
     console.log('INIT Details')
   }
 
@@ -53,8 +51,7 @@ onMessage('event-retry', async(response) => {
   const res = await sendMessage('get-copy-data', initPayload, "background");
  
   if (res) {
-    details.value = (res as any as IInitResponseData).data;
-    sizeStorage.value = Number((res as any as IInitResponseData).size);
+    updateStateData(res as any as ISaveResponseData);
     console.log('INIT event-retry', res)
   }
   togglePopup();
@@ -74,8 +71,7 @@ const handlerCopyText = async(e: any) => {
     const payload = { value: copyText, location: window.location.href };
     const res = await sendMessage('save-copy-data', payload, "background");
     if (show && res) {
-      details.value = [...(res as any as ISaveResponseData).data]
-      sizeStorage.value = Number((res as any as ISaveResponseData).size);
+      updateStateData(res as any as ISaveResponseData);
     }
     console.log('COPY>>>>>>>', res);
   } catch (error: any) {
@@ -168,8 +164,7 @@ async function handlerDeleteListItem(item: any) {
   console.log('DELETE ITEM>>',item)
   const res = await sendMessage('delete-item', item, "background");
   if(res) {
-    details.value = [...(res as any as ISaveResponseData).data]
-    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+    updateStateData(res as any as ISaveResponseData);
   } 
 }
 
@@ -177,24 +172,21 @@ async function handlerSaveEditItem(item: any) {
   console.log('SAVE_EDITED_ITEM', item)
   const res = await sendMessage('save-edit-item', item, "background");
   if (res) {
-    details.value = [...(res as any as ISaveResponseData).data]
-    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+    updateStateData(res as any as ISaveResponseData);
   }
 }
 
 async function handlerAddToFavorite(item: any) {
   const res = await sendMessage('favorite', {action: 'add', item}, "background");
   if (res) {
-    details.value = [...(res as any as ISaveResponseData).data]
-    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+    updateStateData(res as any as ISaveResponseData);
   }
 }
 
 async function handlerRemoveFromFavorite(item: any) {
   const res = await sendMessage('favorite', { action: 'remove', item }, "background");
   if (res) {
-    details.value = [...(res as any as ISaveResponseData).data]
-    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+    updateStateData(res as any as ISaveResponseData);
   }
 }
 
@@ -204,8 +196,7 @@ async function openContentPopupButton() {
     const res = await sendMessage('get-copy-data', initPayload, "background");
    
     if (res) {
-      details.value = (res as any as IInitResponseData).data;
-      sizeStorage.value = Number((res as any as IInitResponseData).size);
+      updateStateData(res as any as ISaveResponseData);
       console.log('INIT Details openPopup>>', res)
     }
     hidePopup.value = false;
@@ -218,7 +209,7 @@ async function openContentPopupButton() {
   }
 }
 
-async function handlerSaveParseImage(data: any) {
+async function handlerSaveParseImage(data: { value: string }) {
   console.log('SAVE_PARSE_IMAGE', data)
   const payload = {
     ...data,
@@ -226,24 +217,38 @@ async function handlerSaveParseImage(data: any) {
   }
   const res = await sendMessage('save-parse-image', payload, "background");
   if (res) {
-    details.value = [...(res as any as ISaveResponseData).data]
-    sizeStorage.value = Number((res as any as ISaveResponseData).size);
+    updateStateData(res as any as ISaveResponseData);
   }
+}
+
+async function handlerCreateCustomItem(data: {value: string}) {
+  const payload = {
+    ...data,
+    action: 'custom-item'
+  }
+  const res = await sendMessage('save-custom-item', payload, "background");
+  if (res) {
+    updateStateData(res as any as ISaveResponseData);
+  }
+}
+
+function updateStateData(res: ISaveResponseData) {
+  details.value = [...res.data]
+  sizeStorage.value = Number(res.size);
 }
 
 </script>
 
 <template>
   <div class="wrapper-main right-0 top-0 select-none leading-1em">
-    <PastePopup ref="pastePopupRef" :visible="visiblePastePopup()"
-      :position="pastePopupPosition" :detailsItems="details" @closePastePopup="actionClosePastePopup"
-      @paste-value="handlerPasteValueFromPastePopup" />
+    <PastePopup ref="pastePopupRef" :visible="visiblePastePopup()" :position="pastePopupPosition"
+      :detailsItems="details" @closePastePopup="actionClosePastePopup" @paste-value="handlerPasteValueFromPastePopup" />
     <!-- POPUP -->
     <PopupContent v-if="init" :entry-memory-options="options?.memory" :sizeStorage="sizeStorage" :detailsItems="details"
       :hidePopup="hidePopup" :show="show" @close="togglePopup()" @hide-popup-to-button="hideContentPopupToButton"
       @delete-item-action="handlerDeleteListItem" @save-edit="handlerSaveEditItem"
       @add-to-favorite="handlerAddToFavorite" @remove-favorite="handlerRemoveFromFavorite"
-      @save-parse-image="handlerSaveParseImage" />
+      @save-parse-image="handlerSaveParseImage" @save-custom-item="handlerCreateCustomItem" />
 
     <!-- BUTTON HIDE POPUP -->
     <button v-if="hidePopup" class="open-button flex shadow cursor-pointer" @click="openContentPopupButton()">
