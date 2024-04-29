@@ -145,6 +145,7 @@ function getBase64(file: any) {
   text-align: center;
   width: 100%;
   text-transform: uppercase;
+  height: max-content;
 }
 
 .error_message_text {
@@ -171,7 +172,8 @@ function getBase64(file: any) {
   flex-wrap: wrap;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  height: max-content;
+  align-items: flex-start
 }
 
 .parse-image .content-editor__textarea {

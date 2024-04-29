@@ -50,6 +50,13 @@ function handlerSubmit() {
   flex-wrap: wrap;
   justify-content: center;
   width: 100%;
+  height: 82%;
+}
+
+@media screen and (max-height: 766px) {
+.custom-create {
+    height: 76%;
+  }
 }
 
 .custom-create .content-editor_item-info-list {
@@ -79,7 +86,7 @@ function handlerSubmit() {
 .custom-create .content-editor__textarea {
   background: transparent;
   width: 90%;
-  height: 578px;
+  height: 100%;
   margin-bottom: 15px;
   resize: none;
   border: 1px solid #8b888842;

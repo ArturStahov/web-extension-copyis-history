@@ -350,7 +350,7 @@ watch(entryMemoryOptions,() => {
 }
 
 .popup-content .popup-main {
-  height: 605px;
+  height: 85%;
   overflow: hidden;
   margin-top: 20px;
 }
@@ -387,7 +387,7 @@ watch(entryMemoryOptions,() => {
 }
 
 .popup-content .details-parse {
- 
+ height: 100%;
 }
 
 

@@ -109,6 +109,13 @@ function handlerClickLinkPreview(link: string) {
   flex-wrap: wrap;
   justify-content: center;
   width: 100%;
+  height: 88%;
+}
+
+@media screen and (max-height: 766px) {
+  .content-editor {
+    height: 76%;
+  }
 }
 
 .content-editor .content-editor_item-info-list {
@@ -158,7 +165,7 @@ function handlerClickLinkPreview(link: string) {
 .content-editor .content-editor__textarea {
   background: transparent;
   width: 90%;
-  height: 460px;
+  height: 75%;
   margin-bottom: 15px;
   resize: none;
   border: 1px solid #8b888842;

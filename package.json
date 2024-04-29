@@ -1,9 +1,9 @@
 {
   "name": "copybook",
-  "displayName": "copybook - you copy history for work, studies, creative!",
+  "displayName": "Copybook",
   "version": "0.0.1",
   "private": true,
-  "description": "copybook",
+  "description": "Copybook - seamlessly save, organize, and manage copied text, while effortlessly extracting text from images",
   "scripts": {
     "dev": "npm run clear && cross-env NODE_ENV=development run-p dev:*",
     "dev-firefox": "npm run clear && cross-env NODE_ENV=development EXTENSION=firefox run-p dev:*",
