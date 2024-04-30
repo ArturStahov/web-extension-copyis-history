@@ -190,6 +190,18 @@ function getBase64(file: any) {
   word-break: break-all;
 }
 
+@media screen and (max-height: 840px) {
+  .parse-image .content-editor__textarea {
+    height: 350px;
+  }
+}
+
+@media screen and (max-height: 780px) {
+  .parse-image .content-editor__textarea {
+      height: 300px;
+    }
+}
+
 .parse-image .content-editor__textarea:focus {
   outline: none !important;
 }
