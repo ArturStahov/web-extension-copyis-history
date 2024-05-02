@@ -37,12 +37,10 @@ onMounted(async () => {
 
   if (res) {
     updateStateData(res as any as ISaveResponseData);
-    console.log('INIT Details')
   }
 
   const data = await sendMessage('get-options', {}, "background");
   options.value = data;
-  console.log('options.value>>>>', options.value)
   init.value = true
 })
 
@@ -52,7 +50,6 @@ onMessage('event-retry', async(response) => {
  
   if (res) {
     updateStateData(res as any as ISaveResponseData);
-    console.log('INIT event-retry', res)
   }
   togglePopup();
 })
@@ -73,7 +70,6 @@ const handlerCopyText = async(e: any) => {
     if (show && res) {
       updateStateData(res as any as ISaveResponseData);
     }
-    console.log('COPY>>>>>>>', res);
   } catch (error: any) {
     console.log(error?.message);
   }
@@ -148,7 +144,6 @@ function handlerPasteValueFromPastePopup(payload: {value: string}) {
 
   nodeElement.dispatchEvent(pasteEvent);
   
-  console.log('PASTE EVENT>>>', payload, nodeElement)
   actionClosePastePopup();
 }
 
@@ -161,7 +156,6 @@ function hideContentPopupToButton() {
 }
 
 async function handlerDeleteListItem(item: any) {
-  console.log('DELETE ITEM>>',item)
   const res = await sendMessage('delete-item', item, "background");
   if(res) {
     updateStateData(res as any as ISaveResponseData);
@@ -169,7 +163,6 @@ async function handlerDeleteListItem(item: any) {
 }
 
 async function handlerSaveEditItem(item: any) {
-  console.log('SAVE_EDITED_ITEM', item)
   const res = await sendMessage('save-edit-item', item, "background");
   if (res) {
     updateStateData(res as any as ISaveResponseData);
@@ -197,20 +190,17 @@ async function openContentPopupButton() {
    
     if (res) {
       updateStateData(res as any as ISaveResponseData);
-      console.log('INIT Details openPopup>>', res)
     }
     hidePopup.value = false;
 
     const data = await sendMessage('get-options', {}, "background");
     options.value = data;
-    console.log('RE_INIT OPTIONS', data)
   } catch (error: any) {
     console.log(error?.message);
   }
 }
 
 async function handlerSaveParseImage(data: { value: string }) {
-  console.log('SAVE_PARSE_IMAGE', data)
   const payload = {
     ...data,
     action: 'parse-image'

@@ -7,15 +7,20 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  enableHelpScreen: {
+    type: Boolean,
+    default: false
+  },
 });
 
-const { enableEditor } = toRefs(props);
+const { enableEditor, enableHelpScreen } = toRefs(props);
 
 const emit = defineEmits<{
   (e: 'close',): void,
-  (e: 'close-editor',): void,
+  (e: 'back-button-action',): void,
   (e: 'hide-popup-to-button',): void
   (e: 'create-custom',): void,
+  (e: 'open-help-screen'): void
 }>();
 
 onMounted(() => {
@@ -25,7 +30,7 @@ onMounted(() => {
 
 <template>
   <div class="header-wrapper">
-    <ButtonComponent v-if="!enableEditor" class="create-custom" @click="emit('create-custom')">
+    <ButtonComponent v-if="!enableEditor && !enableHelpScreen" class="create-custom" @click="emit('create-custom')">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
         <g fill="#0d9488">
           <path d="M12 6a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2h-4v4a1 1 0 1 1-2 0v-4H7a1 1 0 1 1 0-2h4V7a1 1 0 0 1 1-1" />
@@ -35,7 +40,7 @@ onMounted(() => {
         </g>
       </svg>
     </ButtonComponent>
-    <ButtonComponent v-if="enableEditor" class="close-editor" @click="emit('close-editor')">
+    <ButtonComponent v-if="enableEditor || enableHelpScreen" class="back-button-action" @click="emit('back-button-action')">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
         <g fill="none">
           <path
@@ -43,6 +48,15 @@ onMounted(() => {
           <path fill="#0d9488"
             d="M19 3a3 3 0 0 1 2.995 2.824L22 6v12a3 3 0 0 1-2.824 2.995L19 21H8.108a3 3 0 0 1-2.436-1.25l-.108-.16l-4.08-6.53a2 2 0 0 1-.087-1.967l.086-.153l4.081-6.53a3 3 0 0 1 2.351-1.404L8.108 3zm0 2H8.108a1 1 0 0 0-.773.366l-.075.104L3.18 12l4.08 6.53a1 1 0 0 0 .72.462l.128.008H19a1 1 0 0 0 .993-.883L20 18V6a1 1 0 0 0-.883-.993zm-8.121 3.464l2.12 2.122l2.122-2.122a1 1 0 1 1 1.414 1.415L14.415 12l2.12 2.121a1 1 0 0 1-1.414 1.415L13 13.414l-2.121 2.122a1 1 0 1 1-1.415-1.415L11.586 12L9.464 9.879a1 1 0 0 1 1.415-1.415" />
         </g>
+      </svg>
+    </ButtonComponent>
+
+
+
+    <ButtonComponent v-if="!enableHelpScreen" class="help-screen-button" @click="emit('open-help-screen')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="#0d9488"
+          d="M11 18h2v-2h-2zm1-12c-2.2 0-4 1.8-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.8-3 5h2c0-2.2 3-2.5 3-5c0-2.2-1.8-4-4-4m7-1v14H5V5zm0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2" />
       </svg>
     </ButtonComponent>
     <ButtonComponent @click="emit('hide-popup-to-button')">
@@ -68,7 +82,7 @@ onMounted(() => {
   align-items: center;
 }
 
-.close-editor {
+.back-button-action {
   margin-right: auto;
 }
 .create-custom {

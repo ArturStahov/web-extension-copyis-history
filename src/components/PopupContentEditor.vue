@@ -52,7 +52,6 @@ function handlerClickLinkPreview(link: string) {
     return;
   }
   window.open(link, '_blank');
-  console.log('LINK CLICK', link)
 }
 
 </script>

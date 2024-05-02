@@ -80,6 +80,8 @@ const enableEditor = ref<boolean>(false);
 
 const enableCustomCrateItem = ref<boolean>(false);
 
+const enableHelpScreen = ref<boolean>(false);
+
 const memoryOptions = ref<any>({});
 
 const typeList = ref<'main' | 'favorite' | 'memory' | 'parse-image'>('main');
@@ -92,10 +94,11 @@ function getSortedList(detailsList: any[],params:string) {
   return getRenderSortedList(detailsList, params)
 }
 
-function handlerCloseEditor() {
+function handlerBackButtonAction() {
   enableEditor.value = false;
   editItem.value = null;
   enableCustomCrateItem.value = false;
+  enableHelpScreen.value = false;
 }
 
 function handlerOpenEditor(item: any) {
@@ -136,7 +139,6 @@ function getRenderFavoriteList(detailsItems:any[]) {
 }
 
 async function handlerSaveMemoryOptions(options: {[key: string]: string}) {
- console.log('OPTIONS>>>',options)
   const data = await sendMessage('save-memory-options', options, "background");
   memoryOptions.value = data;
 }
@@ -147,6 +149,10 @@ async function handlerSaveParseImage(data: {value: string}) {
 
 function handlerOpenCreateCustomItem() {
   enableCustomCrateItem.value = true;
+}
+
+function handlerOpenHelpScreen() {
+  enableHelpScreen.value = true;
 }
 
 function handlerSaveCustomItem(item: any) {
@@ -176,11 +182,13 @@ watch(entryMemoryOptions,() => {
       </svg>
     </div>
 
-    <PopupContentHeader :enableEditor="enableEditor || enableCustomCrateItem" @close-editor="handlerCloseEditor"
-      @hide-popup-to-button="emit('hide-popup-to-button')" @close="emit('close')"
-      @create-custom="handlerOpenCreateCustomItem" />
+    <!-- HEADER ACTIONS -->
+    <PopupContentHeader :enableEditor="enableEditor || enableCustomCrateItem" :enableHelpScreen="enableHelpScreen"
+      @back-button-action="handlerBackButtonAction" @hide-popup-to-button="emit('hide-popup-to-button')"
+      @close="emit('close')" @create-custom="handlerOpenCreateCustomItem" @open-help-screen="handlerOpenHelpScreen" />
 
-    <div v-if="!enableEditor && !enableCustomCrateItem" class="list-tabs">
+    <!-- TABS-BUTTONS -->
+    <div v-if="!enableEditor && !enableCustomCrateItem && !enableHelpScreen" class="list-tabs">
       <div v-for="(tab,idx) in listTabsActions" @click.native="tab.action" :key="idx"
         :class="{'active-tab': tab.code === typeList}" class="list-tabs-button">
         <span class="tab-icon" v-html="tab.icon"></span>
@@ -189,7 +197,8 @@ watch(entryMemoryOptions,() => {
     </div>
 
     <!-- MAIN SCREEN -->
-    <div v-if="detailsItems && detailsItems.length && !enableEditor && !enableCustomCrateItem" class="popup-main">
+    <div v-if="detailsItems && detailsItems.length && !enableEditor && !enableCustomCrateItem && !enableHelpScreen"
+      class="popup-main">
       <div class="popup-main__scroll-wrapper">
         <!-- MAIN LIST -->
         <div v-if="typeList === 'main'" class="main-list-wrapper">
@@ -222,14 +231,19 @@ watch(entryMemoryOptions,() => {
     </div>
 
     <!-- EDITOR -->
-    <PopupContentEditor :editItem="editItem" v-if="enableEditor" @save-edit="(item) => emit('save-edit',item)" />
+    <PopupContentEditor :editItem="editItem" v-if="enableEditor && !enableHelpScreen"
+      @save-edit="(item) => emit('save-edit',item)" />
 
     <!-- CUSTOM-CREATE ITEM -->
-    <PopupContentCustomCreateItem v-if="enableCustomCrateItem"
+    <PopupContentCustomCreateItem v-if="enableCustomCrateItem && !enableHelpScreen"
       @save-custom-item="handlerSaveCustomItem" />
 
+    <!-- HelpScreen-->
+    <HelpScreen v-if="enableHelpScreen" />
+
     <!-- START SCREEN -->
-    <div v-if="!detailsItems || !detailsItems?.length" class="start-screen">
+    <div v-if="(!detailsItems && !enableHelpScreen) || (!detailsItems?.length && !enableHelpScreen)"
+      class="start-screen">
       <span class="start-screen-title text">Copy some text</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
         <path fill="#ffd060"

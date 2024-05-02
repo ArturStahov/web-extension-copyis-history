@@ -5,7 +5,7 @@ async function activateContentScript() {
     active: true,
     currentWindow: true
   });
-  console.log('START EXTENSION');
+  console.log('=== copybook activated ===');
   const activeTabId = tabs[0]?.id || 0;
   await sendMessage('activate-extension-event', { activate: true }, { context: 'content-script', tabId: activeTabId }); // send to content script
   await sendMessage('activate-extension-event', { activate: true, tabId: activeTabId }, "background"); // send to background script

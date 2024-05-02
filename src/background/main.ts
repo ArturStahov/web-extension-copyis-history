@@ -21,7 +21,6 @@ browser.runtime.onInstalled.addListener((): void => {
 
 onMessage('get-options', (message) => {
   const options = optionsStorage.value;
-  console.log('get-options', message?.data)
   return options
 })
 
@@ -33,7 +32,6 @@ onMessage('save-memory-options', (message: any) => {
     memory: data
   }
   optionsStorage.value = update;
-  console.log('save-memory-options', update);
   return data
 })
 
@@ -41,8 +39,6 @@ let currentActiveTabId = 0
 
 browser.tabs.onActivated.addListener(async () => {
  try {
-   console.log('activated new tab')
-
    let tabs = await browser?.tabs?.query({
      active: true,
      currentWindow: true
@@ -58,7 +54,6 @@ browser.tabs.onActivated.addListener(async () => {
 
 browser.tabs.onUpdated.addListener(async () => {
  try {
-   console.log('activated new tab', currentActiveTabId)
    await sendMessage('activated-new-tab', { tab: currentActiveTabId }, { context: 'content-script', tabId: currentActiveTabId })
  } catch (error: any) {
    console.log('ERROR:', error?.message);
@@ -66,7 +61,6 @@ browser.tabs.onUpdated.addListener(async () => {
 })
 
 onMessage('get-init-copy-data', (message) => {
-  console.log('get-init-copy-data', message)
   const data = storageCopy.value;
   const usedSize = getStringMemorySize(JSON.stringify(data));
   
@@ -78,7 +72,6 @@ onMessage('get-init-copy-data', (message) => {
 
 onMessage('set-notification', (message) => {
   const {data} = message
-  console.log('set-notification', data)
   Notification(data as any);
 })
 
@@ -146,8 +139,6 @@ const handlerCreateItem = async (message: any) => {
     needRemoveFavorite = autoClearOldItems(saveArray);
   }
 
-  console.log('needRemoveFavorite>>>>>>>', needRemoveFavorite)
-
   if (needRemoveFavorite) {
     Notification({
       title: 'ERROR save copy!',
@@ -161,21 +152,18 @@ const handlerCreateItem = async (message: any) => {
   }
 
   (storageCopy.value as any) = saveArray;
-  console.log('save-copy-data', newDataItem, 'usedSize>>>>', usedSize)
 
   if (data.action === 'parse-image') {
     Notification({
       title: 'Save success!',
       message: `Value: ${data.value?.split(0, 10)}...`
     })
-    console.log('save-parse-image', newDataItem, 'usedSize>>>>', usedSize)
   }
   if (data.action === 'custom-item') {
     Notification({
       title: 'Create success!',
       message: `Value: ${data.value?.split(0, 10)}...`
     })
-    console.log('save-custom-item', newDataItem, 'usedSize>>>>', usedSize)
   }
   browser.action.setBadgeText({ text: 'ON' });
   return {
@@ -193,8 +181,6 @@ onMessage('save-parse-image', handlerCreateItem);
 
 onMessage('delete-item', (message: any) => {
   const { data } = message;
-  console.log('delete-item', data)
-
   const saveData = JSON.parse(JSON.stringify(storageCopy.value));
   const parentIdx = saveData.findIndex((parent: any) => parent.key === data?.key);
   const parentItem = saveData[parentIdx] as any;
@@ -231,7 +217,6 @@ onMessage('delete-item', (message: any) => {
 
 onMessage('favorite', async (message: any) => {
   const { data } = message;
-  console.log('favorite', data)
   const {item, action} = data
 
   const saveData = JSON.parse(JSON.stringify(storageCopy.value));
@@ -269,7 +254,6 @@ onMessage('favorite', async (message: any) => {
 
 onMessage('save-edit-item', async (message: any) => {
   const { data } = message;
-  console.log('save-edit-item', data)
 
   const saveData = JSON.parse(JSON.stringify(storageCopy.value));
   const parentIdx = saveData.findIndex((parent: any) => parent.key === data?.key);
@@ -306,8 +290,6 @@ onMessage('save-edit-item', async (message: any) => {
       // CLEARED LAST ELEMENT 
       needRemoveFavorite = autoClearOldItems(saveData);
     }
-
-    console.log('needRemoveFavorite>>>>>>>', needRemoveFavorite)
 
     if (needRemoveFavorite) {
       Notification({
@@ -353,7 +335,6 @@ onMessage('retry-init', async(message) => {
 })
 
 onMessage('get-copy-data', (message) => {
-  console.log('get-copy-data', message)
   const data = storageCopy.value;
   const usedSize = getStringMemorySize(JSON.stringify(data));
 
@@ -367,7 +348,6 @@ function autoClearOldItems(saveArray: any[]) {
   let needRemoveFavorite = false;
   const checkedArray = JSON.parse(JSON.stringify(saveArray))
   for (let iterator = 0; iterator <= checkedArray.length; iterator += 1) {
-    console.log("iterator======", iterator)
     if (!saveArray[iterator]) {
       needRemoveFavorite = true;
       break
@@ -383,15 +363,11 @@ function autoClearOldItems(saveArray: any[]) {
       saveArray.splice(iterator, 1);
     }
 
-    if (iterator === checkedArray.length - 1) {
-      console.log('lastIterator', iterator)
-    }
-
     const checkedSize = getStringMemorySize(JSON.stringify(saveArray))
     if (checkedSize < LIMIT_STORAGE) {
       break;
     }
-    console.log("iterator+++++", iterator, checkedArray.length - 1, checkedSize >= LIMIT_STORAGE)
+  
     if (iterator === checkedArray.length - 1 && checkedSize >= LIMIT_STORAGE) {
       needRemoveFavorite = true;
     }

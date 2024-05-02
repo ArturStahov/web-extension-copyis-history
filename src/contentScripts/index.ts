@@ -39,11 +39,16 @@ function mountContentPopup() {
   const app = createApp(App)
   setupApp(app)
   app.mount(root);
-  document.querySelector(`#${container.id}`)?.addEventListener("wheel",(event: any)=> {
+  const domContainerNode = document.querySelector(`#${container.id}`);
+  domContainerNode?.addEventListener("wheel",(event: any)=> {
     event.stopPropagation();
     event.stopImmediatePropagation();
   })
-  document.querySelector(`#${container.id}`)?.addEventListener("click", (event: any) => {
+  domContainerNode?.addEventListener("click", (event: any) => {
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  })
+  domContainerNode?.addEventListener("keydown", (event: any) => {
     event.stopPropagation();
     event.stopImmediatePropagation();
   })

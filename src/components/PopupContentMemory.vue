@@ -25,8 +25,8 @@ let settingsFields = ref<any>([
   {
     code: 'auto-clear-last',
     type: 'checkbox',
-    label: 'auto-clear old saved copies',
-    tooltip: 'clear data from end list only if the end of memory limit (not clear favorite)',
+    label: 'auto-clear old saved records',
+    tooltip: 'clear records from end list only if the end of memory limit (not clear favorite)',
     value: false,
   }
 ])
@@ -51,7 +51,6 @@ onMounted(() => {
 
 watch(memoryOptions, () => {
   setEntryOptions();
-  console.log('UPDATE>>>>>>>>>>>>', settingsFields.value)
 })
 
 function handlerChangeOptions(payload: {code: string, value: any}) {
