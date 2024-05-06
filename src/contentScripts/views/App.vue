@@ -51,6 +51,7 @@ onMessage('event-retry', async(response) => {
   if (res) {
     updateStateData(res as any as ISaveResponseData);
   }
+  hidePopup.value = false;
   togglePopup();
 })
 
