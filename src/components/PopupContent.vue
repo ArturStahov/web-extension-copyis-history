@@ -197,11 +197,10 @@ watch(entryMemoryOptions,() => {
     </div>
 
     <!-- MAIN SCREEN -->
-    <div v-if="detailsItems && detailsItems.length && !enableEditor && !enableCustomCrateItem && !enableHelpScreen"
-      class="popup-main">
+    <div v-if="!enableEditor && !enableCustomCrateItem && !enableHelpScreen" class="popup-main">
       <div class="popup-main__scroll-wrapper">
         <!-- MAIN LIST -->
-        <div v-if="typeList === 'main'" class="main-list-wrapper">
+        <div v-if="typeList === 'main' && detailsItems && detailsItems.length" class="main-list-wrapper">
           <div v-for="parent in getSortedList(detailsItems,'id')" :key="parent.id" class="details-block">
             <h2 class="details-block__title text"> {{ parent.key }}</h2>
             <ul class="details-block-list">
@@ -211,7 +210,7 @@ watch(entryMemoryOptions,() => {
           </div>
         </div>
         <!-- FAVORITE LIST -->
-        <div v-if="typeList === 'favorite'" class="details-favorite">
+        <div v-if="typeList === 'favorite' && detailsItems && detailsItems.length" class="details-favorite">
           <ul class="details-block-list">
             <PopupContentListItem v-for="item in getRenderFavoriteList(detailsItems)" :key="item.id" :item="item"
               :isFavoriteList="true" @details-list-action="handlerItemAction"
@@ -242,7 +241,8 @@ watch(entryMemoryOptions,() => {
     <HelpScreen v-if="enableHelpScreen" />
 
     <!-- START SCREEN -->
-    <div v-if="(!detailsItems && !enableHelpScreen) || (!detailsItems?.length && !enableHelpScreen)"
+    <div
+      v-if="(!detailsItems && !enableHelpScreen && !enableCustomCrateItem && typeList === 'main') || (!detailsItems?.length && !enableHelpScreen && !enableCustomCrateItem && typeList === 'main')"
       class="start-screen">
       <span class="start-screen-title text">Copy some text</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
