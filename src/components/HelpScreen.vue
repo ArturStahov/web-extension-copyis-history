@@ -14,9 +14,30 @@ onMounted(() => {
 
 <template>
   <div class="help-screen">
-    <p class="help-screen__section-title">HELP INFO</p>
+    <p class="help-screen__section-title">HELP INFORMATION</p>
+    <p class="text">About copybook:</p>
 
-    
+    <iframe width="400" height="200" src="https://www.youtube.com/embed/V1HcJ7BKCkc"
+      title="Copybook - a powerful tool for saving and managing copied text" frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture;"
+      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <p class="text">Recommendation:</p>
+
+    <ul class="recommendation-list">
+      <li class="text">
+        - For activate "paste popup window" select text field in page and sue combination left shift button + left mouse
+        click
+      </li>
+      <li class="text">
+        - link in youtube video: <a class="recommendation-list-link"
+          href="https://www.youtube.com/watch?v=V1HcJ7BKCkc&ab_channel=A.Stakhov" target="_blank">link</a>
+      </li>
+      <li class="text">
+        - for contact: <a class="recommendation-list-link" href="mailto:stakhov.artur@gmail.com"
+          target="_blank">stakhov.artur@gmail.com</a>
+      </li>
+    </ul>
+
 
   </div>
 </template>
@@ -28,7 +49,20 @@ onMounted(() => {
   flex-wrap: wrap;
   justify-content: center;
   width: 100%;
-  height: 100%;
+}
+
+.help-screen .recommendation-list {
+  list-style: none !important;
+}
+
+.help-screen .recommendation-list li {
+  margin-bottom: 10px !important;
+}
+
+.help-screen .recommendation-list-link {
+  text-decoration: none !important;
+  color: #e7ab2a !important;
+  font-weight: 600 !important;
 }
 
 .help-screen .help-screen__section-title {
