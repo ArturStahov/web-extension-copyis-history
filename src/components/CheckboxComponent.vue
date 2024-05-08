@@ -50,6 +50,7 @@ onMounted(() => {
   display: flex;
   width: max-content;
   position: relative;
+  align-items: center;
 }
 
 .field-wrapper .tooltip {
@@ -73,7 +74,7 @@ onMounted(() => {
 }
 
 .field-wrapper .field {
-  margin-right: 5px;
+  margin-right: 10px;
   cursor: pointer;
 }
 

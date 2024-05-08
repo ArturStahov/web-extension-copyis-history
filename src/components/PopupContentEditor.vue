@@ -42,7 +42,7 @@ function getItemActionValue(action: string) {
     return 'PARSE FROM IMAGE';
   }
   if (action === 'custom-item') {
-    return 'CUSTOM ITEM'
+    return 'CUSTOM RECORD'
   }
   return '';
 }

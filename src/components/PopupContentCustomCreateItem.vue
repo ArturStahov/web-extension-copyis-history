@@ -31,7 +31,7 @@ function handlerSubmit() {
 
 <template>
   <div class="custom-create">
-    <p class="content-editor__section-title">CREATE CUSTOM ITEM</p>
+    <p class="content-editor__section-title">CREATE CUSTOM RECORD</p>
 
     <textarea class="content-editor__textarea" v-model="editValue">
 

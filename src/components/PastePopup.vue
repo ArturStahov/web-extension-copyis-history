@@ -77,6 +77,10 @@ function getRenderFavoriteList(detailsItems: any[]) {
         </div>
       </div>
     </div>
+    <div v-else class="screen-empty">
+      <p class="text screen-empty-text">Favorite list empty!</p>
+      <p class="text screen-empty-text">Add record in favorite and try again</p>
+    </div>
 
     <div class="paste-popup-wrapper-information">
       <ButtonComponent class="paste-button" :type-button="'text'" @click="handlerPase">
@@ -103,6 +107,22 @@ function getRenderFavoriteList(detailsItems: any[]) {
   z-index: 1147483645;
   opacity: 0;
   transform: translate3d(0, 0, 0);
+}
+
+.paste-popup .screen-empty {
+  height: 200px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  width: 100%;
+}
+
+.paste-popup .screen-empty-text {
+  color: #ffffff57 !important;
+  text-align: center;
+  width: 100%;
 }
 
 .paste-popup-close {
