@@ -47,12 +47,20 @@ export async function getManifest() {
         ],
         js: [
           'dist/contentScripts/index.global.js',
+          'tesseract/worker.min.js',
+          'tesseract/core/tesseract-core.wasm.js',
         ],
       },
     ],
     web_accessible_resources: [
       {
-        resources: ['dist/contentScripts/style.css'],
+        resources: [
+          'dist/contentScripts/style.css',
+          "tesseract/lang-data/*.traineddata.gz",
+          'tesseract/worker.min.js',
+          'tesseract/core/tesseract-core.wasm.js',
+          'tesseract/worker.min.js.map'
+        ],
         matches: ['<all_urls>'],
       },
     ],

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import 'uno.css'
 import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
-
 import Tesseract from 'tesseract.js';
 
 const emit = defineEmits<{
@@ -16,8 +15,8 @@ const emit = defineEmits<{
 
 const editValue = ref<any>('');
 
-onMounted(() => {
-
+onMounted(async() => {
+  
 })
 
 function handlerSubmit() {
@@ -43,8 +42,22 @@ async function handleImageUpload(event: any) {
     }
     getBase64(image);
     const url = URL.createObjectURL(image);
-    const result = await Tesseract.recognize(url)
+
+    const worker: any = await Tesseract.createWorker('eng',1, {
+      workerPath: browser.runtime.getURL('tesseract/worker.min.js'),
+      langPath: browser.runtime.getURL('tesseract/lang-data/eng.traineddata.gz'),
+      corePath: browser.runtime.getURL('tesseract/core/tesseract-core.wasm.js'),
+      workerBlobURL: false, 
+    });
+
+    await worker.load();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    const result = await worker.recognize(url);
+
     editValue.value = result?.data?.text;
+    await worker.terminate();
+    
   } catch (error: any) {
     errorMessage.value = 'Failed parse image, change browser tab and repeat or change image file!';
     console.log('error parse image:', error?.message)
@@ -179,7 +192,7 @@ function getBase64(file: any) {
 .parse-image .content-editor__textarea {
   background: transparent;
   width: 90%;
-  height: 380px;
+  height: 360px;
   margin-bottom: 15px;
   resize: none;
   border: 1px solid #8b888842;

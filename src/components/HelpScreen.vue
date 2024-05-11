@@ -25,7 +25,7 @@ onMounted(() => {
 
     <ul class="recommendation-list">
       <li class="text">
-        - For activate "paste popup window" select text field in page and sue combination left shift button + left mouse
+        - For activate "paste popup window" select text field in page and use combination left shift button + left mouse
         click
       </li>
       <li class="text">
