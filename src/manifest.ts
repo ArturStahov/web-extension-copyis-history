@@ -47,8 +47,6 @@ export async function getManifest() {
         ],
         js: [
           'dist/contentScripts/index.global.js',
-          'tesseract/worker.min.js',
-          'tesseract/core/tesseract-core.wasm.js',
         ],
       },
     ],
@@ -56,10 +54,6 @@ export async function getManifest() {
       {
         resources: [
           'dist/contentScripts/style.css',
-          "tesseract/lang-data/*.traineddata.gz",
-          'tesseract/worker.min.js',
-          'tesseract/core/tesseract-core.wasm.js',
-          'tesseract/worker.min.js.map'
         ],
         matches: ['<all_urls>'],
       },

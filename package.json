@@ -3,7 +3,7 @@
   "displayName": "Copybook",
   "version": "0.0.2",
   "private": true,
-  "description": "Copybook - seamlessly save, organize, and manage copied text, while effortlessly extracting text from images",
+  "description": "Copybook - seamlessly save, organize, and manage copied text",
   "scripts": {
     "dev": "npm run clear && cross-env NODE_ENV=development run-p dev:*",
     "dev-firefox": "npm run clear && cross-env NODE_ENV=development EXTENSION=firefox run-p dev:*",

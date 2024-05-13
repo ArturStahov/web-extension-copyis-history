@@ -41,22 +41,22 @@ async function handleImageUpload(event: any) {
       return;
     }
     getBase64(image);
-    const url = URL.createObjectURL(image);
+    //const url = URL.createObjectURL(image);
 
-    const worker: any = await Tesseract.createWorker('eng',1, {
-      workerPath: browser.runtime.getURL('tesseract/worker.min.js'),
-      langPath: browser.runtime.getURL('tesseract/lang-data/eng.traineddata.gz'),
-      corePath: browser.runtime.getURL('tesseract/core/tesseract-core.wasm.js'),
-      workerBlobURL: false, 
-    });
+    // const worker: any = await Tesseract.createWorker('eng',1, {
+    //   workerPath: browser.runtime.getURL('tesseract/worker.min.js'),
+    //   langPath: browser.runtime.getURL('tesseract/lang-data/eng.traineddata.gz'),
+    //   corePath: browser.runtime.getURL('tesseract/core/tesseract-core.wasm.js'),
+    //   workerBlobURL: false, 
+    // });
 
-    await worker.load();
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
-    const result = await worker.recognize(url);
+    // await worker.load();
+    // await worker.loadLanguage('eng');
+    // await worker.initialize('eng');
+    // const result = await worker.recognize(url);
 
-    editValue.value = result?.data?.text;
-    await worker.terminate();
+    // editValue.value = result?.data?.text;
+    // await worker.terminate();
     
   } catch (error: any) {
     errorMessage.value = 'Failed parse image, change browser tab and repeat or change image file!';
