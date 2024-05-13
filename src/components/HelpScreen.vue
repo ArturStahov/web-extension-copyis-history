@@ -57,6 +57,7 @@ onMounted(() => {
 
 .help-screen .recommendation-list li {
   margin-bottom: 10px !important;
+  line-height: 1.2 !important;
 }
 
 .help-screen .recommendation-list-link {
