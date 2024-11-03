@@ -21,6 +21,15 @@ browser.runtime.onInstalled.addListener((): void => {
 
 onMessage('get-options', (message) => {
   const options = optionsStorage.value;
+  
+  // TODO support old interface options
+  if((options as any).memory) {
+    return {
+      ...(options as any).memory,
+      ...options,
+    }
+  }
+
   return options
 })
 
