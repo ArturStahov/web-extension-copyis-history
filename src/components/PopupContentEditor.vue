@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import 'uno.css'
-import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
+import { ref, onMounted, defineEmits, defineProps, watch, toRefs, computed } from 'vue';
 
 const emit = defineEmits<{
   (e: 'save-edit', payload: any): void,
@@ -18,20 +18,36 @@ const props = defineProps({
 const { editItem } = toRefs(props);
 
 const editValue = ref<any>(null);
+const editTitle = ref<any>('');
+
+const isCustomRecord = computed(() => {
+  const itemAction = editItem.value?.action || null;
+  if (itemAction && itemAction === 'custom-item') {
+    return true;
+  }
+
+  return false;
+})
 
 onMounted(() => {
+  console.log('editItem>>>>', editItem?.value)
   if (editItem?.value) {
     editValue.value = editItem?.value?.value;
+    editTitle.value = editItem?.value?.title || '';
   } else {
     editValue.value = ''
   }
 })
 
 function handlerSubmit() {
-  if (editItem?.value?.value && editItem?.value?.value !== editValue.value) {
+  const isSaveCondition = (editItem?.value?.value && editItem?.value?.value !== editValue.value )
+   || (Object.hasOwn(editItem?.value, 'title') && editItem?.value?.title !== editTitle.value);
+   
+  if (isSaveCondition) {
     const payload = {
       ...editItem.value,
-      value: editValue.value
+      value: editValue.value,
+      ...(isCustomRecord.value === true ? { title: editTitle.value} : {})
     }
     emit('save-edit', payload);
   }
@@ -44,7 +60,7 @@ function getItemActionValue(action: string) {
   if (action === 'custom-item') {
     return 'CUSTOM RECORD'
   }
-  return '';
+  return 'COPIED TEXT';
 }
 
 function handlerClickLinkPreview(link: string) {
@@ -57,7 +73,7 @@ function handlerClickLinkPreview(link: string) {
 </script>
 
 <template>
-  <div class="content-editor">
+  <div class="content-editor" :class="{ 'edit-custom-item': isCustomRecord }">
     <p class="content-editor__section-title">Details</p>
     <ul class="content-editor_item-info-list">
       <li v-if="editItem.location" @click="handlerClickLinkPreview(editItem.location)"
@@ -91,6 +107,8 @@ function handlerClickLinkPreview(link: string) {
 
     <p class="content-editor__section-title">Editor</p>
 
+    <input v-if="isCustomRecord" type="text" v-model="editTitle" placeholder="ADD TITLE" class="content-editor__title-input" />
+
     <textarea class="content-editor__textarea" v-model="editValue">
 
     </textarea>
@@ -108,7 +126,7 @@ function handlerClickLinkPreview(link: string) {
   flex-wrap: wrap;
   justify-content: center;
   width: 100%;
-  height: 88%;
+  height: 86%;
 }
 
 @media screen and (max-height: 766px) {
@@ -175,6 +193,10 @@ function handlerClickLinkPreview(link: string) {
   word-break: break-all;
 }
 
+.content-editor.edit-custom-item .content-editor__textarea {
+  height: calc(75% - 45px);
+}
+
 .content-editor .content-editor__textarea:focus {
   outline: none !important;
 }
@@ -196,5 +218,25 @@ function handlerClickLinkPreview(link: string) {
 .content-editor .content-editor__textarea::-webkit-scrollbar-thumb {
   background-color: #ffd060 !important;
   outline: 1px solid slategrey !important;
+}
+
+.content-editor .content-editor__title-input {
+  background: transparent;
+  width: 90%;
+  height: 25px;
+  margin-bottom: 10px;
+  resize: none;
+  border: 1px solid #8b888842;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #ffffff;
+  padding: 5px;
+  outline: none;
+}
+
+.content-editor .content-editor__title-input::placeholder {
+  font-size: 14px;
+  line-height: 1.2;
+  color: #ebe8e8b2;
 }
 </style>

@@ -54,17 +54,18 @@ onMounted(() => {
 }
 
 .field-wrapper .tooltip {
+  font-size: 14px !important;
   position: absolute;
-  top: -100px; 
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140px;
-  height: max-content;
-  background-color: rgb(34, 33, 33);
-  color: #0d9488;
+  top: -100px !important; 
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 140px !important;
+  height: max-content !important;
+  background-color: rgb(34, 33, 33) !important;
+  color: #0d9488 !important;
   padding: 5px;
   opacity: 0;
-  border: #ffffff solid 1px;
+  border: #ffffff solid 1px !important;
   border-radius: 5px;
   transition: opacity 0.3s linear;
 }

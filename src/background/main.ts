@@ -29,9 +29,11 @@ onMessage('save-memory-options', (message: any) => {
   const options = optionsStorage.value;
   const update = {
     ...options,
-    memory: data
+    ...data
   }
   optionsStorage.value = update;
+  console.log('prev options>>', options)
+  console.log('save options>>', update)
   return data
 })
 
@@ -118,7 +120,7 @@ const handlerCreateItem = async (message: any) => {
 
   const usedSize = getStringMemorySize(JSON.stringify(saveArray));
 
-  const autoClearEnable = optionsStorage.value?.memory?.['auto-clear-last'];
+  const autoClearEnable = optionsStorage.value?.['auto-clear-last'];
 
   if (usedSize >= LIMIT_STORAGE && !autoClearEnable) {
     Notification({
@@ -252,6 +254,43 @@ onMessage('favorite', async (message: any) => {
   }
 })
 
+onMessage('pin', async (message: any) => {
+  const { data } = message;
+  const { item, action } = data
+
+  const saveData = JSON.parse(JSON.stringify(storageCopy.value));
+  const parentIdx = saveData.findIndex((parent: any) => parent.key === item?.key);
+  const parentItem = saveData[parentIdx] as any;
+
+  if (parentItem) {
+    const editIdx = parentItem.items?.findIndex((el: any) => el.id === item.id);
+    if (editIdx === -1) {
+      console.log('ERROR: not found item in db')
+      return;
+    }
+    const updated = {
+      ...item,
+      pin: action === 'add',
+    }
+    parentItem.items.splice(editIdx, 1, updated);
+
+    storageCopy.value = saveData;
+    const usedSize = getStringMemorySize(JSON.stringify(saveData));
+
+    Notification({
+      title: action === 'add' ? 'Pin record success!' : 'Unpin record success!',
+      message: `${item.value?.split(0, 10)}...`
+    })
+
+    return {
+      data: saveData,
+      size: usedSize,
+    }
+  } else {
+    console.log('ERROR: item Not-found parent')
+  }
+})
+
 onMessage('save-edit-item', async (message: any) => {
   const { data } = message;
 
@@ -270,7 +309,7 @@ onMessage('save-edit-item', async (message: any) => {
 
     const usedSize = getStringMemorySize(JSON.stringify(saveData));
 
-    const autoClearEnable = optionsStorage.value?.memory?.['auto-clear-last'];
+    const autoClearEnable = optionsStorage.value?.['auto-clear-last'];
 
     if (usedSize >= LIMIT_STORAGE && !autoClearEnable) {
       Notification({
