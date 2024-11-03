@@ -29,9 +29,11 @@ onMessage('save-memory-options', (message: any) => {
   const options = optionsStorage.value;
   const update = {
     ...options,
-    memory: data
+    ...data
   }
   optionsStorage.value = update;
+  console.log('prev options>>', options)
+  console.log('save options>>', update)
   return data
 })
 
@@ -118,7 +120,7 @@ const handlerCreateItem = async (message: any) => {
 
   const usedSize = getStringMemorySize(JSON.stringify(saveArray));
 
-  const autoClearEnable = optionsStorage.value?.memory?.['auto-clear-last'];
+  const autoClearEnable = optionsStorage.value?.['auto-clear-last'];
 
   if (usedSize >= LIMIT_STORAGE && !autoClearEnable) {
     Notification({
@@ -270,7 +272,7 @@ onMessage('save-edit-item', async (message: any) => {
 
     const usedSize = getStringMemorySize(JSON.stringify(saveData));
 
-    const autoClearEnable = optionsStorage.value?.memory?.['auto-clear-last'];
+    const autoClearEnable = optionsStorage.value?.['auto-clear-last'];
 
     if (usedSize >= LIMIT_STORAGE && !autoClearEnable) {
       Notification({

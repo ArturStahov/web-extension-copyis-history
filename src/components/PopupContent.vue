@@ -14,6 +14,7 @@ const emit = defineEmits<{
   (e: 'remove-favorite', item: any): void,
   (e: 'save-parse-image', payload: any): void,
   (e: 'save-custom-item', payload: any): void,
+  (e: 'update-options', payload: any): void,
 }>();
 
 const props = defineProps({
@@ -141,6 +142,7 @@ function getRenderFavoriteList(detailsItems:any[]) {
 async function handlerSaveMemoryOptions(options: {[key: string]: string}) {
   const data = await sendMessage('save-memory-options', options, "background");
   memoryOptions.value = data;
+  emit('update-options', data);
 }
 
 async function handlerSaveParseImage(data: {value: string}) {
@@ -223,7 +225,7 @@ watch(entryMemoryOptions,() => {
         </div>
         <!-- MEMORY SETTINGS -->
         <div v-if="typeList === 'memory'" class="details-memory">
-          <PopupContentMemory :sizeStorage="sizeStorage" :memoryOptions="memoryOptions"
+          <PopupContentSettings :sizeStorage="sizeStorage" :memoryOptions="memoryOptions"
             @save-options="handlerSaveMemoryOptions" />
         </div>
       </div>

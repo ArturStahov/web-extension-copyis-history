@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useToggle } from '@vueuse/core'
 import 'uno.css'
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
 import { getPastePopupPosition } from '~/services/pastePopup'
 
@@ -20,6 +20,13 @@ const openPastePopup = ref<boolean>(false);
 const pastePopupRef = ref<any>(null);
 const elementToPasteValue = ref<any>(null);
 const correctCombinationKeyOpenPastePopup = ref<boolean>(false);
+
+const isEnabledVisibleOpenButton = computed(() => {
+  if (options.value && options.value['visible-open-button'] === true) {
+    return true;
+  }
+  return false
+})
 
 const pastePopupPosition = reactive({
   "left": 0,
@@ -66,7 +73,7 @@ function getSelectionText() {
 const handlerCopyText = async(e: any) => {
   try {
     const copyText = getSelectionText();
-    const payload = { value: copyText, location: window.location.href };
+    const payload = { value: copyText, location: window.location.href, action: 'copy-text-item' };
     const res = await sendMessage('save-copy-data', payload, "background");
     if (show && res) {
       updateStateData(res as any as ISaveResponseData);
@@ -228,6 +235,10 @@ function updateStateData(res: ISaveResponseData) {
   sizeStorage.value = Number(res.size);
 }
 
+function handlerUpdateOptions(data: Record<string,string>) {
+  Object.assign(options.value, data);
+}
+
 </script>
 
 <template>
@@ -235,14 +246,15 @@ function updateStateData(res: ISaveResponseData) {
     <PastePopup ref="pastePopupRef" :visible="visiblePastePopup()" :position="pastePopupPosition"
       :detailsItems="details" @closePastePopup="actionClosePastePopup" @paste-value="handlerPasteValueFromPastePopup" />
     <!-- POPUP -->
-    <PopupContent v-if="init" :entry-memory-options="options?.memory" :sizeStorage="sizeStorage" :detailsItems="details"
+    <PopupContent v-if="init" :entry-memory-options="options" :sizeStorage="sizeStorage" :detailsItems="details"
       :hidePopup="hidePopup" :show="show" @close="togglePopup()" @hide-popup-to-button="hideContentPopupToButton"
       @delete-item-action="handlerDeleteListItem" @save-edit="handlerSaveEditItem"
       @add-to-favorite="handlerAddToFavorite" @remove-favorite="handlerRemoveFromFavorite"
-      @save-parse-image="handlerSaveParseImage" @save-custom-item="handlerCreateCustomItem" />
+      @save-parse-image="handlerSaveParseImage" @save-custom-item="handlerCreateCustomItem" @update-options="handlerUpdateOptions" />
 
     <!-- BUTTON HIDE POPUP -->
-    <button v-if="hidePopup" class="open-button flex shadow cursor-pointer" @click="openContentPopupButton()">
+    <button v-if="hidePopup && isEnabledVisibleOpenButton" class="open-button flex shadow cursor-pointer"
+      @click="openContentPopupButton()">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
         <path fill="#0d9488"
           d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm6.197 2.964C9.622 7.739 9 8.24 9 9s.622 1.26 1.197 1.536c.622.297 1.437.464 2.303.464s1.681-.167 2.303-.464C15.378 10.261 16 9.76 16 9s-.621-1.26-1.197-1.536C14.18 7.167 13.366 7 12.5 7s-1.681.167-2.303.464m5.798 3.426C15.17 11.567 13.91 12 12.5 12s-2.67-.433-3.495-1.11A1 1 0 0 0 9 11c0 1.105 1.567 2 3.5 2s3.5-.895 3.5-2q0-.055-.005-.11M12.5 14c-1.41 0-2.67-.433-3.495-1.11A1 1 0 0 0 9 13c0 1.105 1.567 2 3.5 2s3.5-.895 3.5-2a1 1 0 0 0-.005-.11C15.17 13.567 13.91 14 12.5 14" />

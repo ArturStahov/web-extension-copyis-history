@@ -68,14 +68,16 @@ function handlerAction(type: string) {
   emit('details-list-action', { action: type, item: item.value })
 }
 
-function getItemActionValue(action: string) {
-  if (action === 'parse-image') {
-    return 'PARSE FROM IMAGE';
+function getItemHoverValue(item: any) {
+  if(item.location) {
+    return item.location;
   }
-  if (action === 'custom-item') {
-    return 'CUSTOM RECORD'
+
+  if (item.action === 'custom-item') {
+    return item.title ? `<span class="custom-item-title">TITLE:<span/> ${item.title}` : `<span class="custom-item-title">TITLE: EMPTY TITLE<span/>`
   }
-  return '';
+
+  return item.value;
 }
 
 onMounted(() => {
@@ -91,14 +93,14 @@ onMounted(() => {
       <path fill="#d3ac13" d="M4 8a4 4 0 1 1 8 0a4 4 0 0 1-8 0m4-2.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5" />
     </svg>
 
-    <span v-if="!hoverText || !item.location && !item.action" class="text details-block-list__item-text">
-      {{ item.value }}
+    <span v-if="!hoverText" class="text details-block-list__item-text not-hovered">
+      {{ item.title ? item.title : item.value }}
     </span>
 
-    <span @click="() => handlerClickLinkPreview(item.location)" target="_blank"
-      v-if="hoverText && item.location || hoverText && item.action" class="text details-block-list__item-text"
-      :class="{ 'link-preview': item.location, 'parse-info': item.action }">
-      {{ item.location ? item.location : getItemActionValue(item.action) }}
+    <span v-else @click="() => handlerClickLinkPreview(item.location)" target="_blank"
+      class="text details-block-list__item-text hovered" :class="{ 'link-preview': item.location}"
+      v-html="getItemHoverValue(item)"
+      >
     </span>
 
     <div class="details-block-list__item-actions">
@@ -185,11 +187,6 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.details-block-list__item .parse-info {
-  color: #d3ac13 !important;
-  font-weight: 600;
-}
-
 .details-block-list__item a.link-preview {
   cursor: pointer;
   color: #d9223d;
@@ -217,6 +214,10 @@ onMounted(() => {
 }
 
 .details-block-list__item-time {
+  color: #d3ac13 !important;
+}
+
+.details-block-list__item .custom-item-title {
   color: #d3ac13 !important;
 }
 

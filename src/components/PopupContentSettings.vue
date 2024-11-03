@@ -28,6 +28,13 @@ let settingsFields = ref<any>([
     label: 'auto-clear old saved records',
     tooltip: 'clear records from end list only if the end of memory limit (not clear favorite)',
     value: false,
+  },
+  {
+    code: 'visible-open-button',
+    type: 'checkbox',
+    label: 'visible open button on web-page',
+    tooltip: 'enabled visible short open button on all pages',
+    value: true,
   }
 ])
 
@@ -35,12 +42,12 @@ const init = ref<boolean>(false);
 
 function setEntryOptions() {
   init.value = false;
-  settingsFields.value = settingsFields.value.map((item: any) => {
-    return {
-      ...item,
-      ...(memoryOptions?.value?.[item.code] ? { value: memoryOptions.value[item.code] } : {})
+  settingsFields.value.forEach((item: any) => {
+    if (Object.hasOwn(memoryOptions?.value, item.code)) {
+      item.value = memoryOptions.value[item.code]
     }
   })
+  
   init.value = true;
 }
 
@@ -58,7 +65,7 @@ function handlerChangeOptions(payload: {code: string, value: any}) {
     ...optionsData.value,
     [payload.code]: payload.value
   }
-
+  
   emit('save-options', optionsData.value);
 }
 
@@ -66,12 +73,14 @@ function handlerChangeOptions(payload: {code: string, value: any}) {
 
 <template>
   <div class="memory-main">
+    <p class="section-title text title"> Memory </p>
     <p class="memory-size text">Current usage: <span class="current-size-text">{{`${sizeStorage}`}}</span> /
       <span class="max-size-text">10100700</span> bytes
     </p>
     <div v-if="init" class="settings-wrapper">
-      <p class="section-title text"> Clear options</p>
-      <CheckboxComponent v-for="(field,idx) in settingsFields" :key="idx" :field-config="field" @change="handlerChangeOptions"/>
+      <p class="section-title text title"> Settings </p>
+      <CheckboxComponent v-for="(field,idx) in settingsFields" :key="idx" :field-config="field"
+        @change="handlerChangeOptions" />
     </div>
   </div>
 </template>
@@ -105,8 +114,8 @@ function handlerChangeOptions(payload: {code: string, value: any}) {
   padding: 15px;
 }
 
-.memory-main .settings-wrapper .section-title {
-  color: #e7ab2a;
+.memory-main .section-title.title {
+  color: #e7ab2a !important;
   font-weight: 600;
   font-size: 16px;
   text-align: center;

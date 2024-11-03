@@ -7,21 +7,24 @@ const emit = defineEmits<{
 }>();
 
 // const props = defineProps({
-  
+
 // });
 
 //const {  } = toRefs(props);
 
 const editValue = ref<any>(null);
 
+const titleValue = ref<any>('');
+
 onMounted(() => {
- 
+
 })
 
 function handlerSubmit() {
   if (editValue.value) {
     const payload = {
-      value: editValue.value
+      value: editValue.value,
+      title: titleValue.value
     }
     emit('save-custom-item', payload);
   }
@@ -32,7 +35,7 @@ function handlerSubmit() {
 <template>
   <div class="custom-create">
     <p class="content-editor__section-title">CREATE CUSTOM RECORD</p>
-
+    <input type="text" v-model="titleValue" placeholder="ADD TITLE" class="content-editor__title-input" />
     <textarea class="content-editor__textarea" v-model="editValue">
 
     </textarea>
@@ -54,7 +57,7 @@ function handlerSubmit() {
 }
 
 @media screen and (max-height: 766px) {
-.custom-create {
+  .custom-create {
     height: 76%;
   }
 }
@@ -74,7 +77,7 @@ function handlerSubmit() {
 
 .custom-create .content-editor__section-title {
   margin-top: 0;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   color: #e7ab2a;
   font-weight: 600;
   font-size: 16px;
@@ -86,7 +89,7 @@ function handlerSubmit() {
 .custom-create .content-editor__textarea {
   background: transparent;
   width: 90%;
-  height: 100%;
+  height: calc(100% - 45px);
   margin-bottom: 15px;
   resize: none;
   border: 1px solid #8b888842;
@@ -118,5 +121,25 @@ function handlerSubmit() {
 .custom-create .content-editor__textarea::-webkit-scrollbar-thumb {
   background-color: #ffd060 !important;
   outline: 1px solid slategrey !important;
+}
+
+.custom-create .content-editor__title-input {
+  background: transparent;
+  width: 90%;
+  height: 25px;
+  margin-bottom: 10px;
+  resize: none;
+  border: 1px solid #8b888842;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #ffffff;
+  padding: 5px;
+  outline: none;
+}
+
+.custom-create .content-editor__title-input::placeholder {
+  font-size: 14px;
+  line-height: 1.2;
+  color: #ebe8e8b2;
 }
 </style>
