@@ -25,15 +25,15 @@ let settingsFields = ref<any>([
   {
     code: 'auto-clear-last',
     type: 'checkbox',
-    label: 'auto-clear old saved records',
-    tooltip: 'clear records from end list only if the end of memory limit (not clear favorite)',
+    label: 'Auto-clear old saved copied entries',
+    tooltip: 'Clear records from the end of the list only when memory limit is reached (do not clear favorite or custom entries).',
     value: false,
   },
   {
     code: 'visible-open-button',
     type: 'checkbox',
-    label: 'visible open button on web-page',
-    tooltip: 'enabled visible short open button on all pages',
+    label: 'Show open button on webpage',
+    tooltip: 'Enable visible "Open" button on all pages',
     value: true,
   }
 ])

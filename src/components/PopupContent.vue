@@ -2,7 +2,7 @@
 import 'uno.css'
 import { ref, onMounted, defineEmits, defineProps, watch, toRefs } from 'vue';
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
-import { getRenderSortedList, getFavoriteList } from '~/services/list-service';
+import { getRenderSortedList, getFavoriteList, getCustomList, getCopiedList } from '~/services/list-service';
 
 const emit = defineEmits<{
   (e: 'close',): void,
@@ -15,6 +15,8 @@ const emit = defineEmits<{
   (e: 'save-parse-image', payload: any): void,
   (e: 'save-custom-item', payload: any): void,
   (e: 'update-options', payload: any): void,
+  (e: 'add-pin', item: any): void,
+  (e: 'remove-pin', item: any): void,
 }>();
 
 const props = defineProps({
@@ -44,11 +46,19 @@ const { hidePopup, detailsItems, sizeStorage, entryMemoryOptions } = toRefs(prop
 
 const listTabsActions = [
   {
-    name: 'all',
+    name: 'copied',
     code: 'main',
     icon:`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffd060" fill-rule="evenodd" d="M20 4H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1M4 2a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zm2 5h2v2H6zm5 0a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2zm-3 4H6v2h2zm2 1a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2h-6a1 1 0 0 1-1-1m-2 3H6v2h2zm2 1a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2h-6a1 1 0 0 1-1-1" clip-rule="evenodd"/></svg>`,
     action: () => {
       typeList.value = 'main';
+    }
+  },
+  {
+    name: 'custom',
+    code: 'custom-records',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#ffd060" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2M6 6h5v5H6zm4.5 13a2.5 2.5 0 1 1 0-5a2.5 2.5 0 0 1 0 5m3-6l3-5l3 5z"/></svg>`,
+    action: () => {
+      typeList.value = 'custom-records';
     }
   },
   {
@@ -85,15 +95,12 @@ const enableHelpScreen = ref<boolean>(false);
 
 const memoryOptions = ref<any>({});
 
-const typeList = ref<'main' | 'favorite' | 'memory' | 'parse-image'>('main');
+const typeList = ref<'main' | 'favorite' | 'memory' | 'parse-image' | 'custom-records'>('main');
 
 const editItem = ref<any|null>(null);
 
 const tooltipPreview = ref<any>({ value: '', enable: false, position: '' });
 
-function getSortedList(detailsList: any[],params:string) {
-  return getRenderSortedList(detailsList, params)
-}
 
 function handlerBackButtonAction() {
   enableEditor.value = false;
@@ -123,7 +130,9 @@ function handlerItemAction(event: { action: string, item: any, $event?:any}) {
     copy: () => copyValue(event?.item?.value),
     edit: () => handlerOpenEditor(event.item),
     addToFavorite: () => emit('add-to-favorite', event.item),
-    removeFavorite: () => emit('remove-favorite', event.item)
+    removeFavorite: () => emit('remove-favorite', event.item),
+    addPin: () => emit('add-pin', event.item),
+    removePin: () => emit('remove-pin', event.item)
   }
   actions[event.action] ? actions[event.action]() : console.log('Not found event');
 }
@@ -137,6 +146,14 @@ function handlerPreviewTooltip(options: { value: string, enable: boolean, positi
 
 function getRenderFavoriteList(detailsItems:any[]) {
   return getFavoriteList(detailsItems);
+}
+
+function getRenderCustomList(detailsItems: any[]) {
+  return getCustomList(detailsItems);
+}
+
+function getCopiedMainList(detailsItems: any[], isParent: boolean) {
+  return getCopiedList(detailsItems, isParent);
 }
 
 async function handlerSaveMemoryOptions(options: {[key: string]: string}) {
@@ -164,6 +181,7 @@ function handlerSaveCustomItem(item: any) {
 
 onMounted(async() => {
   memoryOptions.value = entryMemoryOptions.value;
+  console.log('detailsItems>>>>',detailsItems.value)
 })
 
 watch(entryMemoryOptions,() => {
@@ -201,23 +219,58 @@ watch(entryMemoryOptions,() => {
     <!-- MAIN SCREEN -->
     <div v-if="!enableEditor && !enableCustomCrateItem && !enableHelpScreen" class="popup-main">
       <div class="popup-main__scroll-wrapper">
+
         <!-- MAIN LIST -->
-        <div v-if="typeList === 'main' && detailsItems && detailsItems.length" class="main-list-wrapper">
-          <div v-for="parent in getSortedList(detailsItems,'id')" :key="parent.id" class="details-block">
+        <div v-if="typeList === 'main'" class="main-list-wrapper">
+          <div v-for="parent in getCopiedMainList(detailsItems, true)" :key="parent.id" class="details-block">
             <h2 class="details-block__title text"> {{ parent.key }}</h2>
             <ul class="details-block-list">
-              <PopupContentListItem v-for="item in getSortedList(parent.items, 'id')" :key="item.id" :item="item"
+              <PopupContentListItem v-for="item in getCopiedMainList(parent.items, false)" :key="item.id" :item="item"
                 @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
             </ul>
           </div>
+          <div v-if="(!getCopiedMainList(detailsItems, true).length && !enableHelpScreen && !enableCustomCrateItem)"
+            class="start-screen">
+            <span class="start-screen-title text">Copy some text!</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+              <path fill="#ffd060"
+                d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm7.69 2.958a.75.75 0 0 0-1.36-.043L8.785 10.5H7.75a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .67-.415l1.023-2.044l2.116 5.001a.75.75 0 0 0 1.339.086L15.93 12h.819a.75.75 0 0 0 0-1.5H15.5a.75.75 0 0 0-.648.372l-.995 1.706z" />
+            </svg>
+          </div>
         </div>
+
+        <!-- CUSTOM RECORDS LIST -->
+        <div v-if="typeList === 'custom-records'" class="main-list-wrapper">
+          <ul v-if="!!getRenderCustomList(detailsItems).length" class="details-block-list">
+            <PopupContentListItem v-for="item in getRenderCustomList(detailsItems)" :key="item.id" :item="item"
+              :isCustomRecordsList="true" @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
+          </ul>
+          <div v-if="(!getRenderCustomList(detailsItems).length && !enableHelpScreen && !enableCustomCrateItem)"
+            class="start-screen">
+            <span class="start-screen-title text">Create custom record!</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+              <path fill="#ffd060"
+                d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm7.69 2.958a.75.75 0 0 0-1.36-.043L8.785 10.5H7.75a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .67-.415l1.023-2.044l2.116 5.001a.75.75 0 0 0 1.339.086L15.93 12h.819a.75.75 0 0 0 0-1.5H15.5a.75.75 0 0 0-.648.372l-.995 1.706z" />
+            </svg>
+          </div>
+        </div>
+
         <!-- FAVORITE LIST -->
-        <div v-if="typeList === 'favorite' && detailsItems && detailsItems.length" class="details-favorite">
-          <ul class="details-block-list">
+        <div v-if="typeList === 'favorite'" class="details-favorite">
+          <ul v-if="!!getRenderFavoriteList(detailsItems).length" class="details-block-list">
             <PopupContentListItem v-for="item in getRenderFavoriteList(detailsItems)" :key="item.id" :item="item"
               :isFavoriteList="true" @details-list-action="handlerItemAction"
               @preview-tooltip="handlerPreviewTooltip" />
           </ul>
+
+          <div v-if="(!getRenderFavoriteList(detailsItems).length && !enableHelpScreen && !enableCustomCrateItem)"
+            class="start-screen">
+            <span class="start-screen-title text">Empty!</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+              <path fill="#ffd060"
+                d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm7.69 2.958a.75.75 0 0 0-1.36-.043L8.785 10.5H7.75a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .67-.415l1.023-2.044l2.116 5.001a.75.75 0 0 0 1.339.086L15.93 12h.819a.75.75 0 0 0 0-1.5H15.5a.75.75 0 0 0-.648.372l-.995 1.706z" />
+            </svg>
+          </div>
         </div>
         <!-- PARSE IMAGE -->
         <div v-if="typeList === 'parse-image'" class="details-parse">
@@ -242,16 +295,6 @@ watch(entryMemoryOptions,() => {
     <!-- HelpScreen-->
     <HelpScreen v-if="enableHelpScreen" />
 
-    <!-- START SCREEN -->
-    <div
-      v-if="(!detailsItems && !enableHelpScreen && !enableCustomCrateItem && typeList === 'main') || (!detailsItems?.length && !enableHelpScreen && !enableCustomCrateItem && typeList === 'main')"
-      class="start-screen">
-      <span class="start-screen-title text">Copy some text</span>
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
-        <path fill="#ffd060"
-          d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a2.5 2.5 0 0 1 2.5 2.5v14.25a.75.75 0 0 1-.75.75H5.5a1 1 0 0 0 1 1h13.25a.75.75 0 0 1 0 1.5H6.5A2.5 2.5 0 0 1 4 19.5zm7.69 2.958a.75.75 0 0 0-1.36-.043L8.785 10.5H7.75a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .67-.415l1.023-2.044l2.116 5.001a.75.75 0 0 0 1.339.086L15.93 12h.819a.75.75 0 0 0 0-1.5H15.5a.75.75 0 0 0-.648.372l-.995 1.706z" />
-      </svg>
-    </div>
   </div>
 </template>
 
@@ -362,7 +405,9 @@ watch(entryMemoryOptions,() => {
 }
 
 .start-screen-title {
+  width: 100% !important;
   margin-bottom: 5px;
+  text-align: center !important;
 }
 
 .popup-content .popup-main {

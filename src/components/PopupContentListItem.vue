@@ -20,6 +20,10 @@ const props = defineProps({
   isFavoriteList: {
     type: Boolean,
     default: false
+  },
+  isCustomRecordsList: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -56,6 +60,14 @@ function handlerFavorite(item: any) {
   }
 }
 
+function handlerPin(item: any) {
+  if (!item.pin) {
+    emit('details-list-action', { action: 'addPin', item })
+  } else {
+    emit('details-list-action', { action: 'removePin', item })
+  }
+}
+
 function handlerClickLinkPreview(link: string) {
  if(!link) {
   return;
@@ -87,7 +99,7 @@ onMounted(() => {
 
 <template>
   <li ref="listItemElement" @mouseover="handlerStartHoverText" @mouseleave="handlerEndHoverText"
-    class="details-block-list__item" :class='{ "favorite-item": item.favorite && !isFavoriteList }'>
+    class="details-block-list__item" :class='{ "favorite-item": item.favorite && !isFavoriteList, "pin-item": item.pin && isCustomRecordsList }'>
     <svg class="details-block-list__item-marker" xmlns=" http://www.w3.org/2000/svg" width="16" height="16"
       viewBox="0 0 16 16">
       <path fill="#d3ac13" d="M4 8a4 4 0 1 1 8 0a4 4 0 0 1-8 0m4-2.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5" />
@@ -99,11 +111,23 @@ onMounted(() => {
 
     <span v-else @click="() => handlerClickLinkPreview(item.location)" target="_blank"
       class="text details-block-list__item-text hovered" :class="{ 'link-preview': item.location}"
-      v-html="getItemHoverValue(item)"
-      >
+      v-html="getItemHoverValue(item)">
     </span>
 
     <div class="details-block-list__item-actions">
+      <ButtonComponent class="pin-button" v-if="isCustomRecordsList" :tooltip="'pin'" data-type="pin"
+        @click="() => handlerPin(item)">
+        <svg v-if="!item.pin" data-type="ADD TO PIN ICON" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24">
+          <path fill="#0d9488" d="M15 12.423L16.577 14v1H12.5v5l-.5.5l-.5-.5v-5H7.423v-1L9 12.423V5H8V4h8v1h-1z" />
+        </svg>
+        <svg v-else data-type="REMOVE FROM PIN" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24">
+          <path fill="none" stroke="#0d9488" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="m3 3l18 18M15 4.5l-3.249 3.249m-2.57 1.433L7 10l-1.5 1.5l7 7L14 17l.82-2.186m1.43-2.563L19.5 9M9 15l-4.5 4.5M14.5 4L20 9.5" />
+        </svg>
+      </ButtonComponent>
+
       <ButtonComponent :tooltip="'favorite'" data-type="favorite" @click="() => handlerFavorite(item)">
         <svg v-if="!item.favorite" data-type="ADD TO FAVORITE ICON" xmlns="http://www.w3.org/2000/svg" width="24"
           height="24" viewBox="0 0 16 16">
@@ -116,18 +140,21 @@ onMounted(() => {
             d="m5.8 21l1.6-7L2 9.2l7.2-.6L12 2l2.8 6.6l7.2.6l-3.2 2.8H18c-3.1 0-5.6 2.3-6 5.3zm8.2-4v2h8v-2z" />
         </svg>
       </ButtonComponent>
+
       <ButtonComponent :tooltip="'edit'" data-type="edit" @click="() => handlerAction('edit')">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <path fill="#0d9488"
             d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-1.9l10-10V8l-6-6zm7 1.5L18.5 9H13zm7.1 9.5c-.1 0-.3.1-.4.2l-1 1l2.1 2.1l1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-2 1.8L12 20.9V23h2.1l6.1-6.1z" />
         </svg>
       </ButtonComponent>
+
       <ButtonComponent :tooltip="'copy'" data-type="copy" @click="() => handlerAction('copy')">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32">
           <path fill="#0d9488"
             d="M8.5 5.25A3.25 3.25 0 0 1 11.75 2h12A3.25 3.25 0 0 1 27 5.25v18a3.25 3.25 0 0 1-3.25 3.25h-12a3.25 3.25 0 0 1-3.25-3.25zM5 8.75c0-1.352.826-2.511 2-3.001v17.75a4.5 4.5 0 0 0 4.5 4.5h11.751a3.25 3.25 0 0 1-3.001 2H11.5A6.5 6.5 0 0 1 5 23.5z" />
         </svg>
       </ButtonComponent>
+
       <ButtonComponent :tooltip="'delete'" data-type="delete" @click="() => handlerAction('delete')">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <g fill="none">
@@ -201,7 +228,7 @@ onMounted(() => {
   display: flex;
   align-self: flex-end;
   margin-left: auto;
-  opacity: 0;
+  opacity: 0; 
   transition: opacity 0.3s linear;
 }
 
@@ -220,6 +247,11 @@ onMounted(() => {
 .details-block-list__item .custom-item-title {
   color: #d3ac13 !important;
 }
+
+.details-block-list__item.pin-item {
+  background-color: #53535359 !important;
+}
+
 
 .details-block-list__item-marker {
   margin-right: 5px;

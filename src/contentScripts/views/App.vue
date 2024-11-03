@@ -191,6 +191,20 @@ async function handlerRemoveFromFavorite(item: any) {
   }
 }
 
+async function handlerAddPin(item: any) {
+  const res = await sendMessage('pin', { action: 'add', item }, "background");
+  if (res) {
+    updateStateData(res as any as ISaveResponseData);
+  }
+}
+
+async function handlerRemovePin(item: any) {
+  const res = await sendMessage('pin', { action: 'remove', item }, "background");
+  if (res) {
+    updateStateData(res as any as ISaveResponseData);
+  }
+}
+
 async function openContentPopupButton() {
   try {
     const initPayload = { location: window.location.href };
@@ -250,7 +264,9 @@ function handlerUpdateOptions(data: Record<string,string>) {
       :hidePopup="hidePopup" :show="show" @close="togglePopup()" @hide-popup-to-button="hideContentPopupToButton"
       @delete-item-action="handlerDeleteListItem" @save-edit="handlerSaveEditItem"
       @add-to-favorite="handlerAddToFavorite" @remove-favorite="handlerRemoveFromFavorite"
-      @save-parse-image="handlerSaveParseImage" @save-custom-item="handlerCreateCustomItem" @update-options="handlerUpdateOptions" />
+      @save-parse-image="handlerSaveParseImage" @save-custom-item="handlerCreateCustomItem"
+      @update-options="handlerUpdateOptions" @add-pin="handlerAddPin"
+      @remove-pin="handlerRemovePin" />
 
     <!-- BUTTON HIDE POPUP -->
     <button v-if="hidePopup && isEnabledVisibleOpenButton" class="open-button flex shadow cursor-pointer"
