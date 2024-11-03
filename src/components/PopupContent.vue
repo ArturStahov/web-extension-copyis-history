@@ -181,7 +181,6 @@ function handlerSaveCustomItem(item: any) {
 
 onMounted(async() => {
   memoryOptions.value = entryMemoryOptions.value;
-  console.log('detailsItems>>>>',detailsItems.value)
 })
 
 watch(entryMemoryOptions,() => {
