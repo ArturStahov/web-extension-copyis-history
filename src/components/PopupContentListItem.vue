@@ -51,6 +51,10 @@ function handlerAction(type: string) {
   emit('details-list-action', { action: type, item: item.value })
 }
 
+function handlerEdit() {
+  emit('details-list-action', { action: 'edit', item: item.value })
+}
+
 function handlerClickLinkPreview(link: string) {
   if (!link) return;
   window.open(link, '_blank');
@@ -66,7 +70,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <li class="card group relative flex flex-col p-item-padding bg-surface-container rounded-xl border border-transparent hover:border-outline-variant hover:bg-surface-container-high transition-all duration-200"
+  <li class="card group relative flex flex-col p-item-padding bg-surface-container rounded-lg border border-transparent hover:border-outline-variant hover:bg-surface-container-high transition-all duration-200"
     :class="{ 'favorite-card': item.favorite && !isFavoriteList, 'pin-card': item.pin && isCustomRecordsList }">
 
     <!-- Top row: source/time -->
@@ -89,11 +93,11 @@ onMounted(() => {
     <!-- Content area with expand/collapse -->
     <div class="flex-1 min-w-0">
       <p v-if="item.location" class="font-mono-sm text-mono-sm text-on-background transition-all duration-300"
-        :class="isExpanded ? '' : 'line-clamp-2'">
+        :class="isExpanded ? 'line-clamp-none' : 'line-clamp-2'">
         {{ item.value }}
       </p>
       <p v-else class="font-body-sm text-body-sm text-on-background transition-all duration-300"
-        :class="isExpanded ? '' : 'line-clamp-2'">
+        :class="isExpanded ? 'line-clamp-none' : 'line-clamp-2'">
         {{ item.value }}
       </p>
     </div>
@@ -114,11 +118,11 @@ onMounted(() => {
       <div v-else></div>
 
       <!-- Action buttons - ghost icon buttons -->
-      <div class="flex items-center gap-3 shrink-0">
+      <div class="flex items-center gap-1 shrink-0">
         <!-- Pin button (custom records only) -->
         <button v-if="isCustomRecordsList"
-          class="bg-transparent border-none p-1 cursor-pointer flex items-center justify-center transition-colors"
-          :class="item.pin ? 'text-primary' : 'text-on-surface-variant hover:text-primary'"
+          class="bg-transparent border-none shadow-none p-1 text-on-surface-variant cursor-pointer flex items-center justify-center transition-colors"
+          :class="item.pin ? 'text-primary' : 'hover:text-primary'"
           @click="() => handlerPin(item)">
           <svg v-if="!item.pin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
             <path fill="currentColor" d="M15 12.423L16.577 14v1H12.5v5l-.5.5l-.5-.5v-5H7.423v-1L9 12.423V5H8V4h8v1h-1z" />
@@ -129,38 +133,46 @@ onMounted(() => {
           </svg>
         </button>
 
-        <!-- Favorite button -->
-        <button class="bg-transparent border-none p-1 cursor-pointer flex items-center justify-center transition-colors"
-          :class="item.favorite ? 'text-error' : 'text-on-surface-variant hover:text-primary'"
+        <!-- Favorite button - NOT favorited = standard star (add), favorited = star-minus (remove) -->
+        <button class="bg-transparent border-none shadow-none p-1 text-on-surface-variant cursor-pointer flex items-center justify-center transition-colors"
+          :class="item.favorite ? 'text-tertiary' : 'hover:text-tertiary'"
           @click="() => handlerFavorite(item)">
-          <svg v-if="item.favorite" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+          <!-- NOT favorited: Standard outline star = "Add to favorites" -->
+          <svg v-if="!item.favorite" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+            <path fill="currentColor"
+              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.8 21z" />
+          </svg>
+          <!-- Favorited: Filled star with minus = "Remove from favorites" -->
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
             <path fill="currentColor"
               d="m5.8 21l1.6-7L2 9.2l7.2-.6L12 2l2.8 6.6l7.2.6l-3.2 2.8H18c-3.1 0-5.6 2.3-6 5.3zm8.2-4v2h8v-2z" />
           </svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+        </button>
+
+        <!-- Edit button - ALWAYS visible on ALL tabs -->
+        <button class="bg-transparent border-none shadow-none p-1 text-on-surface-variant cursor-pointer flex items-center justify-center transition-colors hover:text-primary"
+          @click="handlerEdit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
             <path fill="currentColor"
-              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.8 21z" />
+              d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83l3.75 3.75z" />
           </svg>
         </button>
 
         <!-- Copy button -->
-        <button class="bg-transparent border-none p-1 cursor-pointer flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"
+        <button class="bg-transparent border-none shadow-none p-1 text-on-surface-variant cursor-pointer flex items-center justify-center transition-colors hover:text-primary"
           @click="() => handlerAction('copy')">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
             <path fill="currentColor"
-              d="M8.5 5.25A3.25 3.25 0 0 1 11.75 2h12A3.25 3.25 0 0 1 27 5.25v18a3.25 3.25 0 0 1-3.25 3.25h-12a3.25 3.25 0 0 1-3.25-3.25zM5 8.75c0-1.352.826-2.511 2-3.001v17.75a4.5 4.5 0 0 0 4.5 4.5h11.751a3.25 3.25 0 0 1-3.001 2H11.5A6.5 6.5 0 0 1 5 23.5z" />
+              d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z" />
           </svg>
         </button>
 
         <!-- Delete button -->
-        <button class="bg-transparent border-none p-1 cursor-pointer flex items-center justify-center text-on-surface-variant hover:text-error transition-colors"
+        <button class="bg-transparent border-none shadow-none p-1 text-on-surface-variant cursor-pointer flex items-center justify-center transition-colors hover:text-error"
           @click="() => handlerAction('delete')">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-            <g fill="currentColor">
-              <path d="M9 7h9v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7z" />
-              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M20 7h-2M4 7h2m0 0h12M6 7v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7m-9-.5A2.5 2.5 0 0 1 11.5 4h1A2.5 2.5 0 0 1 15 6.5v0" />
-            </g>
+            <path fill="currentColor"
+              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5l-1-1h-5l-1 1H5v2h14V4z" />
           </svg>
         </button>
       </div>

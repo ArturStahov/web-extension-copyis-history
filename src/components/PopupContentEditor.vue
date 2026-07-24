@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import 'uno.css'
-import { ref, onMounted, defineEmits, defineProps, watch, toRefs, computed } from 'vue';
+import { ref, onMounted, defineEmits, defineProps, toRefs, computed } from 'vue';
 
 const emit = defineEmits<{
   (e: 'save-edit', payload: any): void,
@@ -25,32 +25,30 @@ const isCustomRecord = computed(() => {
   if (itemAction && itemAction === 'custom-item') {
     return true;
   }
-
   return false;
-})
+});
+
+// Надійна перевірка, чи це вже існуючий збережений запис в історії
+const isExistingRecord = computed(() => {
+  return !!(editItem.value && (editItem.value.time || editItem.value.location || (editItem.value.key && editItem.value.action !== 'custom-item')));
+});
 
 onMounted(() => {
-  console.log('editItem>>>>', editItem?.value)
   if (editItem?.value) {
-    editValue.value = editItem?.value?.value;
+    editValue.value = editItem?.value?.value || '';
     editTitle.value = editItem?.value?.title || '';
   } else {
-    editValue.value = ''
+    editValue.value = '';
   }
-})
+});
 
 function handlerSubmit() {
-  const isSaveCondition = (editItem?.value?.value && editItem?.value?.value !== editValue.value )
-   || (Object.hasOwn(editItem?.value, 'title') && editItem?.value?.title !== editTitle.value);
-   
-  if (isSaveCondition) {
-    const payload = {
-      ...editItem.value,
-      value: editValue.value,
-      ...(isCustomRecord.value === true ? { title: editTitle.value} : {})
-    }
-    emit('save-edit', payload);
-  }
+  const payload = {
+    ...editItem.value,
+    value: editValue.value,
+    ...(isCustomRecord.value === true ? { title: editTitle.value } : {})
+  };
+  emit('save-edit', payload);
 }
 
 function getItemActionValue(action: string) {
@@ -58,7 +56,7 @@ function getItemActionValue(action: string) {
     return 'PARSE FROM IMAGE';
   }
   if (action === 'custom-item') {
-    return 'CUSTOM RECORD'
+    return 'CUSTOM RECORD';
   }
   return 'COPIED TEXT';
 }
@@ -69,174 +67,77 @@ function handlerClickLinkPreview(link: string) {
   }
   window.open(link, '_blank');
 }
-
 </script>
 
 <template>
-  <div class="content-editor" :class="{ 'edit-custom-item': isCustomRecord }">
-    <p class="content-editor__section-title">Details</p>
-    <ul class="content-editor_item-info-list">
-      <li v-if="editItem.location" @click="handlerClickLinkPreview(editItem.location)"
-        class="content-editor_item-info-list-item">
-        <span class="list-item_title text"> Resource link: </span><span
-          class="list-item_value text list-item_value-link">
-          {{ editItem.location }}
-        </span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-          <path fill="none" stroke="#0d9488" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M10 5H8.2c-1.12 0-1.68 0-2.108.218a1.999 1.999 0 0 0-.874.874C5 6.52 5 7.08 5 8.2v7.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h7.606c1.118 0 1.677 0 2.104-.218c.377-.192.683-.498.875-.874c.218-.428.218-.987.218-2.105V14m1-5V4m0 0h-5m5 0l-7 7" />
+  <!-- 1. ROOT SHELL: rigidly locked to 600px height, no global scroll -->
+  <div class="w-full h-[600px] max-w-full flex flex-col justify-between bg-surface text-on-surface box-border overflow-hidden">
+
+    <!-- 3. CENTRAL WORKSPACE: only internal content scrolls -->
+    <div class="flex-1 flex flex-col min-h-0 min-w-0 max-w-full w-full box-border overflow-hidden p-container-padding gap-3">
+
+      <!-- 3A. DETAILS BLOCK (ALWAYS RENDERED): prevents CLS layout shift -->
+      <div class="shrink-0 min-h-[76px] w-full box-border bg-surface-container-low/80 border border-outline-variant/30 rounded-lg p-3 flex flex-col justify-center">
+        <p class="text-label-sm text-primary font-bold tracking-wider uppercase mb-1">DETAILS</p>
+
+        <template v-if="isExistingRecord">
+          <div v-if="editItem.location" class="flex items-center gap-2 min-w-0">
+            <span class="text-label-sm text-on-surface-variant shrink-0">Resource Link:</span>
+            <span
+              class="text-primary truncate block hover:underline cursor-pointer text-body-sm text-on-surface min-w-0"
+              @click="handlerClickLinkPreview(editItem.location)">
+              {{ editItem.location }}
+            </span>
+            <svg class="shrink-0 text-primary" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+              viewBox="0 0 24 24">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 5H8.2c-1.12 0-1.68 0-2.108.218a1.999 1.999 0 0 0-.874.874C5 6.52 5 7.08 5 8.2v7.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h7.606c1.118 0 1.677 0 2.104-.218c.377-.192.683-.498.875-.874c.218-.428.218-.987.218-2.105V14m1-5V4m0 0h-5m5 0l-7 7" />
+            </svg>
+          </div>
+
+          <div v-if="editItem.action" class="flex items-center gap-2 min-w-0">
+            <span class="text-label-sm text-on-surface-variant shrink-0">Resource:</span>
+            <span class="text-body-sm text-on-surface min-w-0">{{ getItemActionValue(editItem.action) }}</span>
+          </div>
+
+          <div v-if="editItem.time || editItem.key" class="flex items-center gap-2 min-w-0">
+            <span class="text-label-sm text-on-surface-variant shrink-0">Created:</span>
+            <span class="text-body-sm text-on-surface min-w-0">{{ editItem.key }} {{ editItem.time }}</span>
+          </div>
+        </template>
+
+        <template v-else>
+          <span class="text-label-sm text-on-surface-variant/40 italic">New Custom Record &bull; Manual Entry</span>
+        </template>
+      </div>
+
+      <!-- 3B. TITLE INPUT CONTAINER: fixed height when present -->
+      <div v-if="isCustomRecord" class="shrink-0 flex flex-col gap-1 w-full box-border">
+        <label class="font-label-sm text-label-sm text-on-surface-variant px-1">ADD TITLE</label>
+        <input v-model="editTitle" type="text" placeholder="Type a catchy name for this snippet..."
+          class="w-full box-border bg-surface-container-lowest text-on-surface p-2.5 rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-body-md placeholder:text-outline" />
+      </div>
+
+      <!-- 3C. TEXTAREA CONTAINER: flex column so flex-1 works on textarea -->
+      <div class="flex-1 flex flex-col min-h-0 min-w-0 w-full box-border overflow-hidden gap-1">
+        <label class="font-label-sm text-label-sm text-on-surface-variant px-1 shrink-0">SNIPPET CONTENT</label>
+        <textarea v-model="editValue"
+          class="flex-1 w-full max-w-full min-w-0 box-border bg-surface-container-lowest text-on-surface font-mono-sm text-mono-sm p-3 rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-words custom-scrollbar transition-all placeholder:text-outline"
+          placeholder="Paste or write your custom data here..."></textarea>
+      </div>
+    </div>
+
+    <!-- 4. FOOTER / SAVE BUTTON: rigidly docked to bottom, OUTSIDE workspace -->
+    <footer class="shrink-0 w-full max-w-full box-border p-container-padding bg-surface border-t border-outline-variant/20 mt-auto z-20">
+      <button @click="handlerSubmit"
+        class="w-full box-border py-3 bg-primary text-on-primary font-label-lg font-bold text-label-lg rounded-lg hover:bg-primary-fixed-dim transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3s3 1.34 3 3s-1.34 3-3 3m3-10H5V5h10z" />
         </svg>
-      </li>
-      <li v-if="editItem.action" class="content-editor_item-info-list-item">
-        <span class="list-item_title text">Resource: </span><span
-          class="list-item_value text list-item_value-parse-image">
-          {{ getItemActionValue(editItem.action) }}
-        </span>
-      </li>
-      <li class="content-editor_item-info-list-item">
-        <span class="list-item_title text">Create date: </span><span class="list-item_value text">
-          {{ editItem.key }}
-        </span>
-      </li>
-      <li class="content-editor_item-info-list-item">
-        <span class="list-item_title text">Create time: </span><span class="list-item_value text">
-          {{ editItem.time }}
-        </span>
-      </li>
-    </ul>
-
-    <p class="content-editor__section-title">Editor</p>
-
-    <input v-if="isCustomRecord" type="text" v-model="editTitle" placeholder="ADD TITLE" class="content-editor__title-input" />
-
-    <textarea class="content-editor__textarea" v-model="editValue">
-
-    </textarea>
-    <ButtonComponent class="save-button" :type-button="'text'" @click="handlerSubmit">
-      SAVE
-    </ButtonComponent>
+        SAVE
+      </button>
+    </footer>
 
   </div>
 </template>
-
-<style>
-.content-editor {
-  padding: 15px 0px 0px 0px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-  height: 86%;
-}
-
-@media screen and (max-height: 766px) {
-  .content-editor {
-    height: 76%;
-  }
-}
-
-.content-editor .content-editor_item-info-list {
-  list-style: none;
-  width: 100%;
-  padding-left: 18px;
-}
-
-.content-editor .content-editor_item-info-list-item {
-  list-style: none;
-  display: flex;
-  margin-bottom: 5px;
-}
-
-.content-editor .list-item_title {
-  color: #0d9488 !important;
-  font-weight: 600 !important;
-  margin-right: 5px !important;
-}
-
-.content-editor .list-item_value {}
-
-.content-editor .list-item_value-link {
-  cursor: pointer;
-  max-width: 350px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #d9223d !important;
-}
-
-.content-editor .list-item_value-parse-image {
-  color: #e7ab2a !important;
-}
-
-.content-editor .content-editor__section-title {
-  margin-top: 0;
-  margin-bottom: 5px;
-  color: #e7ab2a;
-  font-weight: 600;
-  font-size: 16px;
-  text-align: center;
-  width: 100%;
-  text-transform: uppercase;
-}
-
-.content-editor .content-editor__textarea {
-  background: transparent;
-  width: 90%;
-  height: 75%;
-  margin-bottom: 15px;
-  resize: none;
-  border: 1px solid #8b888842;
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ffffff;
-  padding: 5px;
-  word-break: break-all;
-}
-
-.content-editor.edit-custom-item .content-editor__textarea {
-  height: calc(75% - 45px);
-}
-
-.content-editor .content-editor__textarea:focus {
-  outline: none !important;
-}
-
-.content-editor .save-button {
-  width: 125px;
-  height: 25px;
-}
-
-.content-editor .content-editor__textarea::-webkit-scrollbar {
-  width: 5px !important;
-}
-
-.content-editor .content-editor__textarea::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
-  opacity: 0.5 !important;
-}
-
-.content-editor .content-editor__textarea::-webkit-scrollbar-thumb {
-  background-color: #ffd060 !important;
-  outline: 1px solid slategrey !important;
-}
-
-.content-editor .content-editor__title-input {
-  background: transparent;
-  width: 90%;
-  height: 25px;
-  margin-bottom: 10px;
-  resize: none;
-  border: 1px solid #8b888842;
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ffffff;
-  padding: 5px;
-  outline: none;
-}
-
-.content-editor .content-editor__title-input::placeholder {
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ebe8e8b2;
-}
-</style>

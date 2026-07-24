@@ -193,7 +193,7 @@ watch(entryMemoryOptions,() => {
 </script>
 
 <template>
-  <div class="popup-content w-full h-full flex flex-col bg-surface overflow-hidden relative" v-show="show && !hidePopup">
+  <div class="popup-content w-full h-[600px] flex flex-col bg-surface overflow-hidden relative" v-show="show && !hidePopup">
 
     <!-- HEADER -->
     <PopupContentHeader :enableEditor="enableEditor || enableCustomCrateItem" :enableHelpScreen="enableHelpScreen"
@@ -201,7 +201,7 @@ watch(entryMemoryOptions,() => {
       @close="emit('close')" @create-custom="handlerOpenCreateCustomItem" @open-help-screen="handlerOpenHelpScreen" />
 
     <!-- MAIN SCROLLABLE CONTENT -->
-    <main class="flex-1 overflow-y-auto custom-scrollbar px-container-padding pt-1 pb-20 space-y-stack-gap">
+    <main class="flex-1 custom-scrollbar" :class="(!enableEditor && !enableCustomCrateItem && !enableHelpScreen) ? 'overflow-y-auto p-container-padding pb-20 space-y-stack-gap' : 'flex flex-col min-h-0 overflow-hidden'">
 
       <!-- MAIN LIST (Copied tab) -->
       <template v-if="typeList === 'main' && !enableEditor && !enableCustomCrateItem && !enableHelpScreen">
@@ -273,7 +273,7 @@ watch(entryMemoryOptions,() => {
 
       <!-- EDITOR -->
       <PopupContentEditor :editItem="editItem" v-if="enableEditor && !enableHelpScreen"
-        @save-edit="(item) => emit('save-edit',item)" />
+        @save-edit="(item) => { emit('save-edit', item); handlerBackButtonAction(); }" />
 
       <!-- CUSTOM-CREATE ITEM -->
       <PopupContentCustomCreateItem v-if="enableCustomCrateItem && !enableHelpScreen"
@@ -285,7 +285,7 @@ watch(entryMemoryOptions,() => {
 
     <!-- BOTTOM NAVBAR -->
     <nav v-if="!enableEditor && !enableCustomCrateItem && !enableHelpScreen"
-      class="absolute bottom-0 left-0 right-0 z-50 flex justify-around items-center h-16 px-2 bg-surface-container-high border-t border-outline-variant shadow-lg rounded-t-xl">
+      class="absolute bottom-0 left-0 w-full h-16 bg-surface-container-high border-t border-outline-variant flex justify-around items-center z-50">
       <button v-for="(tab, idx) in listTabsActions" :key="idx"
         class="flex flex-col items-center justify-center bg-transparent border-none px-4 py-1 cursor-pointer transition-all duration-200 active:scale-90"
         :class="tab.code === typeList
@@ -307,7 +307,7 @@ watch(entryMemoryOptions,() => {
   top: 5px;
   right: 5px;
   width: 500px;
-  height: 82%;
+  height: 670px;
   background-color: #0b1326;
   border: 1px solid #3c4a46;
   border-radius: 12px;

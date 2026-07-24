@@ -47,7 +47,7 @@ onMounted(() => {
       </ButtonComponent>
 
       <h1 class="font-headline-md text-headline-md font-bold text-primary">
-        {{ enableEditor ? 'EDIT RECORD' : enableHelpScreen ? 'HELP' : 'ClipFlow' }}
+        {{ enableEditor ? 'EDITOR' : enableHelpScreen ? 'HELP' : '' }}
       </h1>
     </div>
     <div class="flex items-center gap-inner-gap">
