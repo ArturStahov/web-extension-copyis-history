@@ -190,6 +190,74 @@ onMounted(async() => {
 watch(entryMemoryOptions,() => {
   memoryOptions.value = entryMemoryOptions.value;
 })
+
+// --- ЛЕЙЗІ-ЛОАД ДЛЯ MAIN LIST ---
+const CHUNK_SIZE = 20;
+const visibleCount = ref(CHUNK_SIZE);
+
+// 1. Кешуємо повний список у computed, щоб не викликати функцію в шаблоні 1000 разів
+const fullMainList = computed(() => {
+  return getCopiedMainList(detailsItems.value || [], true);
+});
+
+// 2. Рахуємо загальну кількість айтемів у всіх групах
+const totalMainItemsCount = computed(() => {
+  return fullMainList.value.reduce((acc, group) => {
+    const items = getCopiedMainList(group.items, false);
+    return acc + items.length;
+  }, 0);
+});
+
+// 3. Розумний зріз: віддаємо тільки ту кількість груп та айтемів, яка влізає у visibleCount
+const visibleMainList = computed(() => {
+  const groups = fullMainList.value;
+  const result = [];
+  let currentCount = 0;
+
+  for (const group of groups) {
+    if (currentCount >= visibleCount.value) break;
+
+    const innerItems = getCopiedMainList(group.items, false);
+    const remainingSlots = visibleCount.value - currentCount;
+
+    if (innerItems.length <= remainingSlots) {
+      result.push({
+        ...group,
+        renderedItems: innerItems
+      });
+      currentCount += innerItems.length;
+    } else {
+      // Якщо група велика — беремо лише частину її айтемів
+      result.push({
+        ...group,
+        renderedItems: innerItems.slice(0, remainingSlots)
+      });
+      currentCount += remainingSlots;
+      break;
+    }
+  }
+  return result;
+});
+
+// 4. Обробник скролу: додаємо +20 айтемів, коли доїхали майже до низу (за 100px)
+function handleListScroll(event: Event) {
+  const target = event.target as HTMLElement;
+  if (!target || typeList.value !== 'main') return;
+
+  if (target.scrollTop + target.clientHeight >= target.scrollHeight - 100) {
+    if (visibleCount.value < totalMainItemsCount.value) {
+      visibleCount.value += CHUNK_SIZE;
+    }
+  }
+}
+
+// 5. Скидаємо ліміт при перемиканні табів або оновленні стора
+watch(typeList, (newTab) => {
+  if (newTab === 'main') visibleCount.value = CHUNK_SIZE;
+});
+watch(detailsItems, () => {
+  visibleCount.value = CHUNK_SIZE;
+});
 </script>
 
 <template>
@@ -201,26 +269,28 @@ watch(entryMemoryOptions,() => {
       @close="emit('close')" @create-custom="handlerOpenCreateCustomItem" @open-help-screen="handlerOpenHelpScreen" />
 
     <!-- MAIN SCROLLABLE CONTENT -->
-    <main class="flex-1 custom-scrollbar" :class="(!enableEditor && !enableCustomCrateItem && !enableHelpScreen) ? 'overflow-y-auto p-container-padding pb-20 space-y-stack-gap' : 'flex flex-col min-h-0 overflow-hidden'">
+    <main @scroll="handleListScroll" class="flex-1 custom-scrollbar" :class="(!enableEditor && !enableCustomCrateItem && !enableHelpScreen) ? 'overflow-y-auto p-container-padding pb-20 space-y-stack-gap' : 'flex flex-col min-h-0 overflow-hidden'">
 
       <!-- MAIN LIST (Copied tab) -->
       <template v-if="typeList === 'main' && !enableEditor && !enableCustomCrateItem && !enableHelpScreen">
-        <div v-for="parent in getCopiedMainList(detailsItems, true)" :key="parent.id" class="space-y-inner-gap">
+        <div v-for="parent in visibleMainList" :key="parent.id" class="space-y-inner-gap">
           <!-- Date section header -->
           <div class="sticky top-0 -mx-container-padding px-container-padding pt-2 pb-1 bg-transparent z-10">
             <div class="flex items-center justify-center">
-              <span class="block-date font-label-lg text-label-lg text-primary bg-surface-container-high px-3 py-0.5 rounded-full border border-outline-variant/30">
+              <span
+                class="block-date font-label-lg text-label-lg text-primary bg-surface-container-high px-3 py-0.5 rounded-full border border-outline-variant/30">
                 {{ parent.key }}
               </span>
             </div>
           </div>
           <ul class="space-y-inner-gap">
-            <PopupContentListItem v-for="item in getCopiedMainList(parent.items, false)" :key="item.id" :item="item"
+            <!-- Беремо вже закешовані й обрізані айтеми з renderedItems -->
+            <PopupContentListItem v-for="item in parent.renderedItems" :key="item.id" :item="item"
               @details-list-action="handlerItemAction" @preview-tooltip="handlerPreviewTooltip" />
           </ul>
         </div>
-        <div v-if="!getCopiedMainList(detailsItems, true).length"
-          class="flex flex-col items-center justify-center py-20 opacity-60">
+
+        <div v-if="!fullMainList.length" class="flex flex-col items-center justify-center py-20 opacity-60">
           <span class="font-body-md text-body-md text-on-surface-variant mb-2">Copy some text!</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
             <path fill="currentColor"
