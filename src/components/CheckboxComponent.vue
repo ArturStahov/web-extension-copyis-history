@@ -15,7 +15,7 @@ const props = defineProps({
 
 const inputValue = ref<boolean>(false);
 
-const { fieldConfig} = toRefs(props);
+const { fieldConfig } = toRefs(props);
 
 function handlerChange(event: any) {
   inputValue.value = event.target.checked;
@@ -31,57 +31,25 @@ onMounted(() => {
     inputValue.value = fieldConfig.value?.value;
   }
 })
-
 </script>
 
 <template>
-  <div class="field-wrapper">
-    <div class="tooltip"> {{ fieldConfig.tooltip }} </div>
-    <input :id="fieldConfig.code" class="field" type="checkbox" :value="inputValue" @input="handlerChange"
-      :checked="inputValue ?? false" />
-    <label class="label" :for="fieldConfig.code">
+  <div class="group relative flex items-center gap-3 p-item-padding bg-surface-container rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer">
+    <input
+      :id="fieldConfig.code"
+      type="checkbox"
+      :value="inputValue"
+      @input="handlerChange"
+      :checked="inputValue ?? false"
+      class="w-4 h-4 rounded accent-primary cursor-pointer"
+    />
+    <label class="font-body-sm text-on-surface cursor-pointer flex-1" :for="fieldConfig.code">
       {{ fieldConfig?.label }}
     </label>
+
+    <!-- Tooltip -->
+    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-surface-container-high border border-outline-variant rounded-lg text-body-sm text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 max-w-[280px] text-center">
+      {{ fieldConfig.tooltip }}
+    </div>
   </div>
 </template>
-
-<style>
-.field-wrapper {
-  display: flex;
-  width: max-content;
-  position: relative;
-  align-items: center;
-}
-
-.field-wrapper .tooltip {
-  font-size: 14px !important;
-  position: absolute;
-  top: -100px !important; 
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 140px !important;
-  height: max-content !important;
-  background-color: rgb(34, 33, 33) !important;
-  color: #0d9488 !important;
-  padding: 5px;
-  opacity: 0;
-  border: #ffffff solid 1px !important;
-  border-radius: 5px;
-  transition: opacity 0.3s linear;
-}
-
-.field-wrapper:hover .tooltip {
-  opacity: 1;
-}
-
-.field-wrapper .field {
-  margin-right: 10px;
-  cursor: pointer;
-}
-
-.field-wrapper .label {
-  font-size: 14px;
-  color: #ffffff;
-  cursor: pointer;
-}
-</style>

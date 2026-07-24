@@ -27,7 +27,6 @@ const props = defineProps({
 const { visible, detailsItems } = toRefs(props);
 
 const selectedItem = ref<any>(null);
-
 const textError = ref<string>('');
 
 function handlerSelectValue(item: { id: string, value: string }) {
@@ -51,41 +50,64 @@ function isSelected(id: string) {
 function getRenderFavoriteList(detailsItems: any[]) {
   return getFavoriteList(detailsItems);
 }
-
 </script>
 
 <template>
-  <div class="paste-popup"
-    :style="`height:${visible === '1' ? 'auto' : 0}px;opacity:${visible};display: flex;left: ${visible === '1' ? position?.left +'px' : '-500%'}; top: ${position?.top}px`">
-    <ButtonComponent class="paste-popup-close" @click="emit('closePastePopup')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-2 -2 24 24">
-        <path fill="#0d9488"
-          d="M4 0h12a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4m0 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm7.414 8l2.829 2.828a1 1 0 0 1-1.415 1.415L10 11.414l-2.828 2.829a1 1 0 1 1-1.415-1.415L8.586 10L5.757 7.172a1 1 0 0 1 1.415-1.415L10 8.586l2.828-2.829a1 1 0 0 1 1.415 1.415z" />
-      </svg>
+  <div
+    class="paste-popup flex flex-col bg-surface rounded-xl border border-outline-variant shadow-2xl overflow-hidden"
+    :style="`height:${visible === '1' ? 'auto' : 0}px;opacity:${visible};display: flex;left: ${visible === '1' ? position?.left + 'px' : '-500%'}; top: ${position?.top}px`"
+  >
+    <!-- Close button -->
+    <ButtonComponent class="absolute right-2 top-2 z-10" @click="emit('closePastePopup')">
+      <span class="i-mdi-close text-on-surface-variant text-[18px]"></span>
     </ButtonComponent>
-    <h2 class="paste-popup-title text">FAVORITE RECORDS</h2>
-    <p class="error-text text" v-if="textError"> {{ textError }}</p>
+
+    <!-- Title -->
+    <h2 class="text-center font-headline-md text-headline-md text-primary px-container-padding pt-3 pb-2">
+      Favorite Records
+    </h2>
+
+    <!-- Error -->
+    <p v-if="textError" class="text-center font-label-sm text-error px-container-padding -mt-1 mb-2">
+      {{ textError }}
+    </p>
+
+    <!-- List -->
     <div class="popup-main" v-if="detailsItems && detailsItems.length">
-      <div class=" popup-main__scroll-wrapper">
-        <div class="details-favorite">
-          <ul class="details-block-list">
-            <li @click="() => handlerSelectValue(item)" :class="{ 'selected-item': isSelected(item.id) }"
-              class="paste-popup-block-list__item" v-for="item in getRenderFavoriteList(detailsItems) " :key="item.id">
-              <span class="paste-popup-block-list__item-value"> {{ item.value }}</span>
-            </li>
-          </ul>
+      <div class="popup-main__scroll-wrapper">
+        <div class="space-y-inner-gap px-container-padding pb-2">
+          <div
+            v-for="item in getRenderFavoriteList(detailsItems)"
+            :key="item.id"
+            class="p-2 bg-surface-container rounded-lg cursor-pointer border transition-all duration-200"
+            :class="isSelected(item.id)
+              ? 'border-primary bg-surface-container-high'
+              : 'border-transparent hover:border-outline-variant'"
+            @click="() => handlerSelectValue(item)"
+          >
+            <span class="font-mono-sm text-mono-sm text-on-surface truncate block">
+              {{ item.value }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
-    <div v-else class="screen-empty">
-      <p class="text screen-empty-text">Favorite list empty!</p>
-      <p class="text screen-empty-text">Add record in favorite and try again</p>
+
+    <!-- Empty state -->
+    <div v-else class="flex flex-col items-center justify-center py-8">
+      <span class="i-mdi-star-outline text-[32px] text-on-surface-variant mb-2"></span>
+      <p class="font-body-sm text-on-surface-variant text-center">Favorite list empty!</p>
+      <p class="font-label-sm text-on-surface-variant/60 text-center mt-1">Add a record to favorites first</p>
     </div>
 
-    <div class="paste-popup-wrapper-information">
-      <ButtonComponent class="paste-button" :type-button="'text'" @click="handlerPase">
+    <!-- Paste button -->
+    <div class="flex justify-center px-container-padding pb-3 pt-2">
+      <button
+        class="w-full py-2 bg-secondary-container text-on-secondary-container font-label-lg rounded-lg hover:opacity-90 transition-opacity active:scale-[0.98]"
+        @click="handlerPase"
+      >
         PASTE
-      </ButtonComponent>
+      </button>
     </div>
   </div>
 </template>
@@ -93,128 +115,21 @@ function getRenderFavoriteList(detailsItems: any[]) {
 <style>
 .paste-popup {
   pointer-events: all !important;
-  display: flex;
-  flex-wrap: wrap;
-  padding: 5px;
   position: absolute;
   width: 350px;
-  color: #ffffff;
-  font-size: 14px;
-  background-color: #363636;
-  border: none;
-  border-radius: 5px;
-  box-shadow: 1px 1px 5px 1px #ffffff57;
   z-index: 1147483645;
   opacity: 0;
   transform: translate3d(0, 0, 0);
-}
-
-.paste-popup .screen-empty {
-  height: 200px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  align-content: center;
-  width: 100%;
-}
-
-.paste-popup .screen-empty-text {
-  color: #ffffff57 !important;
-  text-align: center;
-  width: 100%;
-}
-
-.paste-popup-close {
-  position: absolute;
-  right: 5px;
-  top: 5px;
-}
-
-.paste-popup .paste-popup-title {
-  text-align: center;
-  color: #d3ac13 !important;
-  font-weight: 600 !important;
-  width: 100%;
-  font-size: 14px !important;
-  margin-bottom: 5px !important;
-}
-
-.paste-popup .error-text {
-  text-align: center;
-  color: #c54118 !important;
-  font-weight: 600 !important;
-  width: 100%;
-  font-size: 12px !important;
-  margin: 0 !important;
-}
-
-.paste-popup-wrapper-information {
-  display: flex;
-  justify-content: space-evenly;
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.paste-popup .paste-button {
-  width: 100px !important;
-  height: 25px !important;
 }
 
 .paste-popup .popup-main {
   width: 100%;
   height: 230px;
   overflow: hidden;
-  margin-top: 5px;
 }
 
 .paste-popup .popup-main__scroll-wrapper {
   height: 100%;
   overflow-y: auto;
-}
-
-.paste-popup .details-block-list {
-  padding-left: 10px;
-  list-style: none;
-  padding-right: 10px;
-}
-
-.paste-popup .paste-popup-block-list__item {
-  cursor: pointer;
-  position: relative;
-  border: 1px solid #8b888842;
-  padding: 5px 5px 5px 20px;
-  display: flex;
-  text-decoration: none;
-  list-style: none;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.paste-popup .paste-popup-block-list__item.selected-item {
-  border: 2px solid #d3ac13;
-}
-
-.paste-popup .paste-popup-block-list__item-value {
-  color: #ffffff;
-  font-size: 12px;
-  width: 290px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.paste-popup .popup-main__scroll-wrapper::-webkit-scrollbar {
-  width: 5px;
-}
-
-.paste-popup .popup-main__scroll-wrapper::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  opacity: 0.5;
-}
-
-.paste-popup .popup-main__scroll-wrapper::-webkit-scrollbar-thumb {
-  background-color: #ffd060;
-  outline: 1px solid slategrey;
 }
 </style>

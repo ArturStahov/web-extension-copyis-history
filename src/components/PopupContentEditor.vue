@@ -25,12 +25,10 @@ const isCustomRecord = computed(() => {
   if (itemAction && itemAction === 'custom-item') {
     return true;
   }
-
   return false;
 })
 
 onMounted(() => {
-  console.log('editItem>>>>', editItem?.value)
   if (editItem?.value) {
     editValue.value = editItem?.value?.value;
     editTitle.value = editItem?.value?.title || '';
@@ -40,203 +38,96 @@ onMounted(() => {
 })
 
 function handlerSubmit() {
-  const isSaveCondition = (editItem?.value?.value && editItem?.value?.value !== editValue.value )
-   || (Object.hasOwn(editItem?.value, 'title') && editItem?.value?.title !== editTitle.value);
-   
+  const isSaveCondition = (editItem?.value?.value && editItem?.value?.value !== editValue.value)
+    || (Object.hasOwn(editItem?.value, 'title') && editItem?.value?.title !== editTitle.value);
+
   if (isSaveCondition) {
     const payload = {
       ...editItem.value,
       value: editValue.value,
-      ...(isCustomRecord.value === true ? { title: editTitle.value} : {})
+      ...(isCustomRecord.value === true ? { title: editTitle.value } : {})
     }
     emit('save-edit', payload);
   }
 }
 
 function getItemActionValue(action: string) {
-  if (action === 'parse-image') {
-    return 'PARSE FROM IMAGE';
-  }
-  if (action === 'custom-item') {
-    return 'CUSTOM RECORD'
-  }
-  return 'COPIED TEXT';
+  if (action === 'parse-image') return 'Parse from Image';
+  if (action === 'custom-item') return 'Custom Record';
+  return 'Copied Text';
 }
 
 function handlerClickLinkPreview(link: string) {
-  if (!link) {
-    return;
-  }
+  if (!link) return;
   window.open(link, '_blank');
 }
-
 </script>
 
 <template>
-  <div class="content-editor" :class="{ 'edit-custom-item': isCustomRecord }">
-    <p class="content-editor__section-title">Details</p>
-    <ul class="content-editor_item-info-list">
-      <li v-if="editItem.location" @click="handlerClickLinkPreview(editItem.location)"
-        class="content-editor_item-info-list-item">
-        <span class="list-item_title text"> Resource link: </span><span
-          class="list-item_value text list-item_value-link">
+  <div class="flex flex-col flex-1 p-container-padding">
+    <!-- Header -->
+    <div class="mb-4">
+      <h2 class="font-headline-md text-headline-md text-on-surface">Edit Record</h2>
+      <p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Modify your clipboard entry</p>
+    </div>
+
+    <!-- Details Section -->
+    <div class="mb-4 space-y-2">
+      <div v-if="editItem.location" class="flex items-center gap-2">
+        <span class="font-label-sm text-primary font-semibold">Resource:</span>
+        <span
+          class="font-mono-sm text-mono-sm text-primary truncate cursor-pointer hover:underline max-w-[280px]"
+          @click="handlerClickLinkPreview(editItem.location)"
+        >
           {{ editItem.location }}
         </span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-          <path fill="none" stroke="#0d9488" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M10 5H8.2c-1.12 0-1.68 0-2.108.218a1.999 1.999 0 0 0-.874.874C5 6.52 5 7.08 5 8.2v7.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h7.606c1.118 0 1.677 0 2.104-.218c.377-.192.683-.498.875-.874c.218-.428.218-.987.218-2.105V14m1-5V4m0 0h-5m5 0l-7 7" />
-        </svg>
-      </li>
-      <li v-if="editItem.action" class="content-editor_item-info-list-item">
-        <span class="list-item_title text">Resource: </span><span
-          class="list-item_value text list-item_value-parse-image">
+        <span class="i-mdi-open-in-new text-primary text-[14px] shrink-0"></span>
+      </div>
+
+      <div v-if="editItem.action" class="flex items-center gap-2">
+        <span class="font-label-sm text-primary font-semibold">Type:</span>
+        <span class="font-body-sm text-on-surface-variant">
           {{ getItemActionValue(editItem.action) }}
         </span>
-      </li>
-      <li class="content-editor_item-info-list-item">
-        <span class="list-item_title text">Create date: </span><span class="list-item_value text">
-          {{ editItem.key }}
-        </span>
-      </li>
-      <li class="content-editor_item-info-list-item">
-        <span class="list-item_title text">Create time: </span><span class="list-item_value text">
-          {{ editItem.time }}
-        </span>
-      </li>
-    </ul>
+      </div>
 
-    <p class="content-editor__section-title">Editor</p>
+      <div class="flex items-center gap-2">
+        <span class="font-label-sm text-primary font-semibold">Date:</span>
+        <span class="font-body-sm text-on-surface-variant">{{ editItem.key }}</span>
+      </div>
 
-    <input v-if="isCustomRecord" type="text" v-model="editTitle" placeholder="ADD TITLE" class="content-editor__title-input" />
+      <div class="flex items-center gap-2">
+        <span class="font-label-sm text-primary font-semibold">Time:</span>
+        <span class="font-body-sm text-on-surface-variant">{{ editItem.time }}</span>
+      </div>
+    </div>
 
-    <textarea class="content-editor__textarea" v-model="editValue">
+    <!-- Title Input (custom records only) -->
+    <div v-if="isCustomRecord" class="mb-4">
+      <label class="font-label-sm text-label-sm text-on-surface-variant block mb-1.5">TITLE</label>
+      <input
+        type="text"
+        v-model="editTitle"
+        placeholder="Enter a title..."
+        class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+      />
+    </div>
 
-    </textarea>
-    <ButtonComponent class="save-button" :type-button="'text'" @click="handlerSubmit">
+    <!-- Content Textarea -->
+    <div class="flex-1 flex flex-col mb-4">
+      <label class="font-label-sm text-label-sm text-on-surface-variant block mb-1.5">CONTENT</label>
+      <textarea
+        v-model="editValue"
+        class="flex-1 w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none min-h-[200px]"
+      ></textarea>
+    </div>
+
+    <!-- Save Button -->
+    <button
+      class="w-full py-2.5 bg-secondary-container text-on-secondary-container font-label-lg rounded-lg hover:opacity-90 transition-opacity active:scale-[0.98]"
+      @click="handlerSubmit"
+    >
       SAVE
-    </ButtonComponent>
-
+    </button>
   </div>
 </template>
-
-<style>
-.content-editor {
-  padding: 15px 0px 0px 0px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-  height: 86%;
-}
-
-@media screen and (max-height: 766px) {
-  .content-editor {
-    height: 76%;
-  }
-}
-
-.content-editor .content-editor_item-info-list {
-  list-style: none;
-  width: 100%;
-  padding-left: 18px;
-}
-
-.content-editor .content-editor_item-info-list-item {
-  list-style: none;
-  display: flex;
-  margin-bottom: 5px;
-}
-
-.content-editor .list-item_title {
-  color: #0d9488 !important;
-  font-weight: 600 !important;
-  margin-right: 5px !important;
-}
-
-.content-editor .list-item_value {}
-
-.content-editor .list-item_value-link {
-  cursor: pointer;
-  max-width: 350px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #d9223d !important;
-}
-
-.content-editor .list-item_value-parse-image {
-  color: #e7ab2a !important;
-}
-
-.content-editor .content-editor__section-title {
-  margin-top: 0;
-  margin-bottom: 5px;
-  color: #e7ab2a;
-  font-weight: 600;
-  font-size: 16px;
-  text-align: center;
-  width: 100%;
-  text-transform: uppercase;
-}
-
-.content-editor .content-editor__textarea {
-  background: transparent;
-  width: 90%;
-  height: 75%;
-  margin-bottom: 15px;
-  resize: none;
-  border: 1px solid #8b888842;
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ffffff;
-  padding: 5px;
-  word-break: break-all;
-}
-
-.content-editor.edit-custom-item .content-editor__textarea {
-  height: calc(75% - 45px);
-}
-
-.content-editor .content-editor__textarea:focus {
-  outline: none !important;
-}
-
-.content-editor .save-button {
-  width: 125px;
-  height: 25px;
-}
-
-.content-editor .content-editor__textarea::-webkit-scrollbar {
-  width: 5px !important;
-}
-
-.content-editor .content-editor__textarea::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
-  opacity: 0.5 !important;
-}
-
-.content-editor .content-editor__textarea::-webkit-scrollbar-thumb {
-  background-color: #ffd060 !important;
-  outline: 1px solid slategrey !important;
-}
-
-.content-editor .content-editor__title-input {
-  background: transparent;
-  width: 90%;
-  height: 25px;
-  margin-bottom: 10px;
-  resize: none;
-  border: 1px solid #8b888842;
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ffffff;
-  padding: 5px;
-  outline: none;
-}
-
-.content-editor .content-editor__title-input::placeholder {
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ebe8e8b2;
-}
-</style>

@@ -6,18 +6,10 @@ const emit = defineEmits<{
   (e: 'save-custom-item', payload: any): void,
 }>();
 
-// const props = defineProps({
-
-// });
-
-//const {  } = toRefs(props);
-
 const editValue = ref<any>(null);
-
 const titleValue = ref<any>('');
 
 onMounted(() => {
-
 })
 
 function handlerSubmit() {
@@ -29,117 +21,43 @@ function handlerSubmit() {
     emit('save-custom-item', payload);
   }
 }
-
 </script>
 
 <template>
-  <div class="custom-create">
-    <p class="content-editor__section-title">CREATE CUSTOM RECORD</p>
-    <input type="text" v-model="titleValue" placeholder="ADD TITLE" class="content-editor__title-input" />
-    <textarea class="content-editor__textarea" v-model="editValue">
+  <div class="flex flex-col flex-1 p-container-padding">
+    <!-- Header -->
+    <div class="mb-4">
+      <h2 class="font-headline-md text-headline-md text-on-surface">Create Custom Record</h2>
+      <p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Add a new custom entry to your clipboard</p>
+    </div>
 
-    </textarea>
-    <ButtonComponent class="save-button" :type-button="'text'" @click="handlerSubmit">
+    <!-- Title Input -->
+    <div class="mb-4">
+      <label class="font-label-sm text-label-sm text-on-surface-variant block mb-1.5">TITLE</label>
+      <input
+        type="text"
+        v-model="titleValue"
+        placeholder="Enter a title..."
+        class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+      />
+    </div>
+
+    <!-- Content Textarea -->
+    <div class="flex-1 flex flex-col mb-4">
+      <label class="font-label-sm text-label-sm text-on-surface-variant block mb-1.5">CONTENT</label>
+      <textarea
+        v-model="editValue"
+        placeholder="Paste or type your content here..."
+        class="flex-1 w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none min-h-[200px]"
+      ></textarea>
+    </div>
+
+    <!-- Save Button -->
+    <button
+      class="w-full py-2.5 bg-secondary-container text-on-secondary-container font-label-lg rounded-lg hover:opacity-90 transition-opacity active:scale-[0.98]"
+      @click="handlerSubmit"
+    >
       SAVE
-    </ButtonComponent>
-
+    </button>
   </div>
 </template>
-
-<style>
-.custom-create {
-  padding: 15px 0px 0px 0px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-  height: 82%;
-}
-
-@media screen and (max-height: 766px) {
-  .custom-create {
-    height: 76%;
-  }
-}
-
-.custom-create .content-editor_item-info-list {
-  list-style: none;
-  width: 100%;
-  padding-left: 18px;
-}
-
-.custom-create .content-editor_item-info-list-item {
-  list-style: none;
-  display: flex;
-  margin-bottom: 5px;
-}
-
-
-.custom-create .content-editor__section-title {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #e7ab2a;
-  font-weight: 600;
-  font-size: 16px;
-  text-align: center;
-  width: 100%;
-  text-transform: uppercase;
-}
-
-.custom-create .content-editor__textarea {
-  background: transparent;
-  width: 90%;
-  height: calc(100% - 45px);
-  margin-bottom: 15px;
-  resize: none;
-  border: 1px solid #8b888842;
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ffffff;
-  padding: 5px;
-  word-break: break-all;
-}
-
-.custom-create .content-editor__textarea:focus {
-  outline: none !important;
-}
-
-.custom-create .save-button {
-  width: 125px;
-  height: 25px;
-}
-
-.custom-create .content-editor__textarea::-webkit-scrollbar {
-  width: 5px !important;
-}
-
-.custom-create .content-editor__textarea::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
-  opacity: 0.5 !important;
-}
-
-.custom-create .content-editor__textarea::-webkit-scrollbar-thumb {
-  background-color: #ffd060 !important;
-  outline: 1px solid slategrey !important;
-}
-
-.custom-create .content-editor__title-input {
-  background: transparent;
-  width: 90%;
-  height: 25px;
-  margin-bottom: 10px;
-  resize: none;
-  border: 1px solid #8b888842;
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ffffff;
-  padding: 5px;
-  outline: none;
-}
-
-.custom-create .content-editor__title-input::placeholder {
-  font-size: 14px;
-  line-height: 1.2;
-  color: #ebe8e8b2;
-}
-</style>

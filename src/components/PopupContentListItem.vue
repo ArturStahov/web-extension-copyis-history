@@ -30,7 +30,7 @@ const props = defineProps({
 const { item } = toRefs(props);
 
 const hoverText = ref<boolean>(false);
-
+const expanded = ref<boolean>(false);
 const listItemElement = ref<any>(null)
 
 function handlerStartHoverText(event: any) {
@@ -38,8 +38,7 @@ function handlerStartHoverText(event: any) {
 
   hoverText.value = true;
   if (item.value?.value?.length > 46) {
-
-    emit('preview-tooltip', { value: getTooltipText(), enable: true, position: rect?.top  });
+    emit('preview-tooltip', { value: getTooltipText(), enable: true, position: rect?.top });
   }
 }
 
@@ -69,9 +68,9 @@ function handlerPin(item: any) {
 }
 
 function handlerClickLinkPreview(link: string) {
- if(!link) {
-  return;
- }
+  if (!link) {
+    return;
+  }
   window.open(link, '_blank');
 }
 
@@ -80,180 +79,172 @@ function handlerAction(type: string) {
   emit('details-list-action', { action: type, item: item.value })
 }
 
+function toggleExpand() {
+  expanded.value = !expanded.value;
+}
+
 function getItemHoverValue(item: any) {
-  if(item.location) {
+  if (item.location) {
     return item.location;
   }
 
   if (item.action === 'custom-item') {
-    return item.title ? `<span class="custom-item-title">TITLE:<span/> ${item.title}` : `<span class="custom-item-title">TITLE: EMPTY TITLE<span/>`
+    return item.title ? item.title : 'EMPTY TITLE'
   }
 
   return item.value;
 }
 
+function isCodeContent(): boolean {
+  const value = item.value?.value || '';
+  return /[{}\[\];=>]/.test(value) || value.includes('function') || value.includes('const ') || value.includes('import ');
+}
+
+function isLink(): boolean {
+  const value = item.value?.value || '';
+  return value.startsWith('http') || value.startsWith('www.');
+}
+
+function getSourceIcon(): string {
+  if (item.value?.location) {
+    if (item.value.location.includes('github') || item.value.location.includes('git')) return 'code';
+    if (item.value.location.includes('terminal') || item.value.location.includes('bash')) return 'terminal';
+    if (item.value.location.includes('mail')) return 'email';
+    return 'language';
+  }
+  if (isCodeContent()) return 'code';
+  return 'description';
+}
+
+function getSourceLabel(): string {
+  if (item.value?.location) {
+    try {
+      const url = new URL(item.value.location);
+      return url.hostname.replace('www.', '');
+    } catch {
+      return item.value.location;
+    }
+  }
+  return '';
+}
+
 onMounted(() => {
 })
-
 </script>
 
 <template>
-  <li ref="listItemElement" @mouseover="handlerStartHoverText" @mouseleave="handlerEndHoverText"
-    class="details-block-list__item" :class='{ "favorite-item": item.favorite && !isFavoriteList, "pin-item": item.pin && isCustomRecordsList }'>
-    <svg class="details-block-list__item-marker" xmlns=" http://www.w3.org/2000/svg" width="16" height="16"
-      viewBox="0 0 16 16">
-      <path fill="#d3ac13" d="M4 8a4 4 0 1 1 8 0a4 4 0 0 1-8 0m4-2.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5" />
-    </svg>
+  <div
+    ref="listItemElement"
+    @mouseover="handlerStartHoverText"
+    @mouseleave="handlerEndHoverText"
+    class="group relative flex flex-col bg-surface-container rounded-xl border border-transparent hover:border-outline-variant hover:bg-surface-container-high transition-all duration-200"
+    :class="{ 'card-pinned': item.pin && isCustomRecordsList, 'card-favorite': item.favorite && !isFavoriteList }"
+  >
+    <div class="p-item-padding">
+      <!-- Header: Source + Time -->
+      <div class="flex justify-between items-start gap-inner-gap mb-1">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <span class="i-mdi-code text-on-surface-variant text-[16px] shrink-0" v-if="getSourceIcon() === 'code'"></span>
+          <span class="i-mdi-language text-on-surface-variant text-[16px] shrink-0" v-else-if="getSourceIcon() === 'language'"></span>
+          <span class="i-mdi-email-outline text-on-surface-variant text-[16px] shrink-0" v-else-if="getSourceIcon() === 'email'"></span>
+          <span class="i-mdi-console text-on-surface-variant text-[16px] shrink-0" v-else-if="getSourceIcon() === 'terminal'"></span>
+          <span class="i-mdi-file-document-outline text-on-surface-variant text-[16px] shrink-0" v-else></span>
 
-    <span v-if="!hoverText" class="text details-block-list__item-text not-hovered">
-      {{ item.title ? item.title : item.value }}
-    </span>
+          <p class="font-mono-sm text-mono-sm text-on-surface-variant truncate">
+            {{ item.value?.title ? item.value.title : getSourceLabel() || (item.value?.value?.slice(0, 50) + (item.value?.value?.length > 50 ? '...' : '')) }}
+          </p>
+        </div>
+        <span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">
+          {{ item.value?.time || item.time }}
+        </span>
+      </div>
 
-    <span v-else @click="() => handlerClickLinkPreview(item.location)" target="_blank"
-      class="text details-block-list__item-text hovered" :class="{ 'link-preview': item.location}"
-      v-html="getItemHoverValue(item)">
-    </span>
+      <!-- Content -->
+      <div class="flex-1 min-w-0 mt-1">
+        <!-- Custom item with title -->
+        <p v-if="item.value?.title || item.title" class="font-label-sm text-primary truncate mb-1">
+          {{ item.value?.title || item.title }}
+        </p>
 
-    <div class="details-block-list__item-actions">
-      <ButtonComponent class="pin-button" v-if="isCustomRecordsList" :tooltip="'pin'" data-type="pin"
-        @click="() => handlerPin(item)">
-        <svg v-if="!item.pin" data-type="ADD TO PIN ICON" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-          viewBox="0 0 24 24">
-          <path fill="#0d9488" d="M15 12.423L16.577 14v1H12.5v5l-.5.5l-.5-.5v-5H7.423v-1L9 12.423V5H8V4h8v1h-1z" />
-        </svg>
-        <svg v-else data-type="REMOVE FROM PIN" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-          viewBox="0 0 24 24">
-          <path fill="none" stroke="#0d9488" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="m3 3l18 18M15 4.5l-3.249 3.249m-2.57 1.433L7 10l-1.5 1.5l7 7L14 17l.82-2.186m1.43-2.563L19.5 9M9 15l-4.5 4.5M14.5 4L20 9.5" />
-        </svg>
-      </ButtonComponent>
+        <!-- Code content -->
+        <div v-if="isCodeContent() && !expanded" class="font-mono-sm text-mono-sm text-on-background bg-surface-container-lowest p-2 rounded border border-outline-variant/20 line-clamp-2">
+          {{ item.value?.value || item.value }}
+        </div>
 
-      <ButtonComponent :tooltip="'favorite'" data-type="favorite" @click="() => handlerFavorite(item)">
-        <svg v-if="!item.favorite" data-type="ADD TO FAVORITE ICON" xmlns="http://www.w3.org/2000/svg" width="24"
-          height="24" viewBox="0 0 16 16">
-          <path fill="#0d9488"
-            d="M8.808 2.101a.9.9 0 0 0-1.614 0L5.673 5.183l-3.401.495a.9.9 0 0 0-.5 1.535l2.462 2.399l-.581 3.387a.9.9 0 0 0 1.306.949l.91-.479a5.5 5.5 0 0 1 4.372-8.463zM15 10.5a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m-4-2a.5.5 0 0 0-1 0V10H8.5a.5.5 0 0 0 0 1H10v1.5a.5.5 0 1 0 1 0V11h1.5a.5.5 0 1 0 0-1H11z" />
-        </svg>
-        <svg v-else data-type="REMOVE FROM FAVORITE ICON" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-          viewBox="0 0 24 24">
-          <path fill="#0d9488"
-            d="m5.8 21l1.6-7L2 9.2l7.2-.6L12 2l2.8 6.6l7.2.6l-3.2 2.8H18c-3.1 0-5.6 2.3-6 5.3zm8.2-4v2h8v-2z" />
-        </svg>
-      </ButtonComponent>
+        <!-- Regular text content -->
+        <p v-else class="font-body-sm text-body-sm text-on-background" :class="expanded ? '' : 'line-clamp-2'">
+          {{ item.value?.value || item.value }}
+        </p>
+      </div>
 
-      <ButtonComponent :tooltip="'edit'" data-type="edit" @click="() => handlerAction('edit')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-          <path fill="#0d9488"
-            d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-1.9l10-10V8l-6-6zm7 1.5L18.5 9H13zm7.1 9.5c-.1 0-.3.1-.4.2l-1 1l2.1 2.1l1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-2 1.8L12 20.9V23h2.1l6.1-6.1z" />
-        </svg>
-      </ButtonComponent>
+      <!-- Footer: Expand + Actions -->
+      <div class="flex justify-between items-center mt-2">
+        <button
+          class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1"
+          @click="toggleExpand"
+        >
+          <span class="i-mdi-chevron-down text-[18px] transition-transform duration-200" :class="{ 'rotate-180': expanded }"></span>
+          <span class="text-label-sm">{{ expanded ? 'Less' : 'More' }}</span>
+        </button>
 
-      <ButtonComponent :tooltip="'copy'" data-type="copy" @click="() => handlerAction('copy')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32">
-          <path fill="#0d9488"
-            d="M8.5 5.25A3.25 3.25 0 0 1 11.75 2h12A3.25 3.25 0 0 1 27 5.25v18a3.25 3.25 0 0 1-3.25 3.25h-12a3.25 3.25 0 0 1-3.25-3.25zM5 8.75c0-1.352.826-2.511 2-3.001v17.75a4.5 4.5 0 0 0 4.5 4.5h11.751a3.25 3.25 0 0 1-3.001 2H11.5A6.5 6.5 0 0 1 5 23.5z" />
-        </svg>
-      </ButtonComponent>
+        <div class="flex items-center gap-3 opacity-50 group-hover:opacity-100 transition-opacity">
+          <!-- Pin button (custom records only) -->
+          <button
+            v-if="isCustomRecordsList"
+            class="text-on-surface-variant hover:text-primary transition-colors p-1.5 rounded-full hover:bg-primary-container/20"
+            :title="item.pin ? 'Unpin' : 'Pin'"
+            @click="() => handlerPin(item)"
+          >
+            <span class="i-mdi-pin text-[18px]" :class="{ 'text-primary': item.pin }"></span>
+          </button>
 
-      <ButtonComponent :tooltip="'delete'" data-type="delete" @click="() => handlerAction('delete')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-          <g fill="none">
-            <path fill="#0d9488" d="M9 7h9v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7z" />
-            <path stroke="#0d9488" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M20 7h-2M4 7h2m0 0h12M6 7v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7m-9-.5A2.5 2.5 0 0 1 11.5 4h1A2.5 2.5 0 0 1 15 6.5v0" />
-          </g>
-        </svg>
-      </ButtonComponent>
+          <!-- Copy button -->
+          <button
+            class="text-on-surface-variant hover:text-primary transition-colors p-1.5 rounded-full hover:bg-primary-container/20"
+            title="Copy"
+            @click="() => handlerAction('copy')"
+          >
+            <span class="i-mdi-content-copy text-[18px]"></span>
+          </button>
+
+          <!-- Favorite button -->
+          <button
+            class="text-on-surface-variant hover:text-primary transition-colors p-1.5 rounded-full hover:bg-primary-container/20"
+            :title="item.favorite ? 'Remove from favorites' : 'Add to favorites'"
+            @click="() => handlerFavorite(item)"
+          >
+            <span class="i-mdi-star text-[18px]" :class="{ 'text-primary': item.favorite }"></span>
+          </button>
+
+          <!-- Edit button -->
+          <button
+            class="text-on-surface-variant hover:text-primary transition-colors p-1.5 rounded-full hover:bg-primary-container/20"
+            title="Edit"
+            @click="() => handlerAction('edit')"
+          >
+            <span class="i-mdi-pencil text-[18px]"></span>
+          </button>
+
+          <!-- Delete button -->
+          <button
+            class="text-on-surface-variant hover:text-error transition-colors p-1.5 rounded-full hover:bg-error-container/20"
+            title="Delete"
+            @click="() => handlerAction('delete')"
+          >
+            <span class="i-mdi-delete text-[18px]"></span>
+          </button>
+        </div>
+      </div>
     </div>
-
-    <span class="text details-block-list__item-time">
-      {{ item.time }}
-    </span>
-  </li>
+  </div>
 </template>
 
-<style>
-.details-block-list__item {
-  position: relative;
-  border: 1px solid #8b888842;
-  padding: 5px 5px 5px 20px;
-  display: flex;
-  text-decoration: none;
-  list-style: none;
-  align-items: center;
-  margin-bottom: 10px;
-  transition: all 0.3s linear;
+<style scoped>
+.card-pinned {
+  border-left: 3px solid #ef4444;
 }
 
-.details-block-list__item:hover { 
- transform: scaleY(1.05);
- border-top-color: rgb(226, 219, 219);
- border-bottom-color: rgb(226, 219, 219);
- border-right-color: rgb(226, 219, 219);
-}
-
-.details-block-list__item:hover .link-preview {
- font-weight: 600;
-}
-
-.details-block-list__item-marker {
-  position: absolute;
-  top: 50%;
-  left: 0%;
-  transform: translateY(-50%);
-  z-index: 9999;
-}
-
-.favorite-item {
-  border-left: 3px solid #d9223d
-}
-
-.details-block-list__item .link-preview {
-  cursor: pointer;
-  color: #d9223d !important;
-  font-weight: 600;
-}
-
-.details-block-list__item a.link-preview {
-  cursor: pointer;
-  color: #d9223d;
-  font-weight: 600;
-}
-
-.details-block-list__item:hover .details-block-list__item-actions {
-  opacity: 1;
-}
-
-.details-block-list__item-actions {
-  display: flex;
-  align-self: flex-end;
-  margin-left: auto;
-  opacity: 0; 
-  transition: opacity 0.3s linear;
-}
-
-.details-block-list__item-text {
-  max-width: 275px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-right: 20px;
-}
-
-.details-block-list__item-time {
-  color: #d3ac13 !important;
-}
-
-.details-block-list__item .custom-item-title {
-  color: #d3ac13 !important;
-}
-
-.details-block-list__item.pin-item {
-  background-color: #53535359 !important;
-}
-
-
-.details-block-list__item-marker {
-  margin-right: 5px;
+.card-favorite {
+  border-left: 3px solid #d9223d;
 }
 </style>

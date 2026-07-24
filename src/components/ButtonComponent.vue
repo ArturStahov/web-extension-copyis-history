@@ -19,37 +19,19 @@ const props = defineProps({
 
 const { typeButton } = toRefs(props);
 
-const buttonStyle = ref<any>(['icon-button', 'flex', 'rounded-full', 'shadow', 'cursor-pointer', 'border-none']);
+const buttonStyle = ref<any>([]);
 
 onMounted(() => {
-  if(typeButton.value !== 'icon') {
-    buttonStyle.value = ['button-default', 'shadow', 'cursor-pointer', 'border-none']
+  if (typeButton.value !== 'icon') {
+    buttonStyle.value = ['bg-secondary-container', 'text-on-secondary-container', 'font-label-lg', 'rounded-lg', 'hover:opacity-90', 'transition-opacity', 'active:scale-[0.98]']
+  } else {
+    buttonStyle.value = ['p-2', 'rounded-full', 'hover:bg-surface-container', 'transition-colors', 'active:scale-95']
   }
 })
-
 </script>
 
 <template>
-  <button  @click="emit('click')" :class="buttonStyle" :bg='typeButton !== "icon" ? "teal-600 hover:teal-700" : ""'>
+  <button @click="emit('click')" :class="buttonStyle">
     <slot></slot>
   </button>
 </template>
-
-<style>
-.icon-button {
-  width: max-content;
-  height: auto;
-  background: none;
-}
-
-.button-default {
-  display: flex;
-  pointer-events: all !important;
-  justify-content: center;
-  align-items: center;
-  border-radius: 5px;
-  color: #0a0a0a;
-  font-weight: 600;
-  font-size: 12px;
-}
-</style>
