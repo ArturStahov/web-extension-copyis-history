@@ -109,4 +109,51 @@ export default defineConfig({
       'headline-md': ['18px', { lineHeight: '24px', letterSpacing: '-0.01em', fontWeight: '600' }],
     },
   },
+  preflights: [
+    {
+      getCSS: () => `
+        /* Глобальний ресет для Firefox */
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: #3c4a46 transparent;
+        }
+
+        /* Жорстка стилізація для Chromium (Chrome Extensions) */
+        ::-webkit-scrollbar {
+          width: 5px;
+          height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background-color: #2d3449;
+          border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background-color: #3c4a46;
+        }
+        ::-webkit-scrollbar-button {
+          display: none;
+          width: 0;
+          height: 0;
+        }
+
+        /* Точечний форс для твого тегу <main> та контейнерів з класом custom-scrollbar */
+        main.custom-scrollbar::-webkit-scrollbar,
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px !important;
+        }
+        main.custom-scrollbar::-webkit-scrollbar-thumb,
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #3c4a46 !important;
+          border-radius: 4px !important;
+        }
+        main.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #57f1db !important; /* Твій бірюзовий primary колір */
+        }
+      `
+    }
+  ]
 })

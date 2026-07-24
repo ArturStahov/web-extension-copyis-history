@@ -1,8 +1,10 @@
 html,
 body,
 #app {
-  margin: 0;
-  padding: 0;
+    color-scheme: dark;
+    margin: 0;
+    padding: 0;
+    background-color: #121418;
 }
 
 /* Global button reset — strip browser defaults */
@@ -60,4 +62,56 @@ button {
 .glass-blur {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3c4a46 transparent;
+  /* outline-variant + прозорий фон */
+}
+
+/* Надійні стилі для Chromium (Chrome Extensions) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* Фон доріжки (робимо прозорим, щоб не закривав колір карток) */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Сам ползунок (світло-сірий/темно-бірюзовий з твоєї палітри) */
+::-webkit-scrollbar-thumb {
+  background: #2d3449;
+  /* surface-container-highest */
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+/* Підсвітка ползунка при наведенні миші */
+::-webkit-scrollbar-thumb:hover {
+  background: #3c4a46;
+  /* outline-variant */
+}
+
+/* Прибираємо потворні стрілочки зверху і знизу */
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Специфічний клас, який агент вішав на контейнери */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3c4a46;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #57f1db;
+  /* primary teal при наведенні */
 }

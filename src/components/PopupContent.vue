@@ -207,9 +207,9 @@ watch(entryMemoryOptions,() => {
       <template v-if="typeList === 'main' && !enableEditor && !enableCustomCrateItem && !enableHelpScreen">
         <div v-for="parent in getCopiedMainList(detailsItems, true)" :key="parent.id" class="space-y-inner-gap">
           <!-- Date section header -->
-          <div class="sticky top-0 -mx-container-padding px-container-padding pt-2 pb-1 bg-surface z-10">
+          <div class="sticky top-0 -mx-container-padding px-container-padding pt-2 pb-1 bg-transparent z-10">
             <div class="flex items-center justify-center">
-              <span class="font-label-lg text-label-lg text-primary bg-surface-container-high px-3 py-0.5 rounded-full border border-outline-variant/30">
+              <span class="block-date font-label-lg text-label-lg text-primary bg-surface-container-high px-3 py-0.5 rounded-full border border-outline-variant/30">
                 {{ parent.key }}
               </span>
             </div>
@@ -312,6 +312,10 @@ watch(entryMemoryOptions,() => {
   border: 1px solid #3c4a46;
   border-radius: 12px;
   z-index: 2147483645;
+}
+
+.block-date {
+  box-shadow: 1px 1px 5px 1px #00c7c657;
 }
 
 .start-screen {
