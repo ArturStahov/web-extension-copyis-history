@@ -158,7 +158,7 @@ watch(entryMemoryOptions, () => {
 
 <template>
   <div
-    class="popup-content flex flex-col bg-surface overflow-hidden relative border border-outline-variant shadow-2xl"
+    class="popup-content flex flex-col bg-surface overflow-hidden border border-outline-variant shadow-2xl"
     v-show="show && !hidePopup"
   >
     <!-- TOOLTIP PREVIEW -->
@@ -181,30 +181,8 @@ watch(entryMemoryOptions, () => {
       @open-help-screen="handlerOpenHelpScreen"
     />
 
-    <!-- BOTTOM NAVIGATION BAR -->
-    <nav
-      v-if="showMainContent"
-      class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-2 bg-surface-container-high border-t border-outline-variant"
-    >
-      <button
-        v-for="tab in tabs"
-        :key="tab.code"
-        class="flex flex-col items-center justify-center px-4 py-1 transition-all duration-200 active:scale-90"
-        :class="isActiveTab(tab.code)
-          ? 'bg-secondary-container text-on-secondary-container rounded-full'
-          : 'text-on-surface-variant hover:text-primary'"
-        @click="switchTab(tab.code)"
-      >
-        <span
-          class="text-[20px] leading-none"
-          :class="tab.icon"
-        ></span>
-        <span class="font-label-sm text-label-sm mt-0.5">{{ tab.name }}</span>
-      </button>
-    </nav>
-
     <!-- MAIN SCROLLABLE CONTENT -->
-    <main class="flex-1 overflow-y-auto px-container-padding pt-2 pb-20 space-y-stack-gap">
+    <main class="flex-1 overflow-y-auto px-container-padding pt-2 pb-2 space-y-stack-gap">
       <!-- MAIN LIST -->
       <template v-if="showMainContent && typeList === 'main'">
         <div v-for="parent in getCopiedMainList(detailsItems, true)" :key="parent.id">
@@ -306,6 +284,28 @@ watch(entryMemoryOptions, () => {
           @save-options="handlerSaveMemoryOptions" />
       </div>
     </main>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav
+      v-if="showMainContent"
+      class="flex justify-around items-center h-14 px-2 bg-surface-container-high border-t border-outline-variant shrink-0"
+    >
+      <button
+        v-for="tab in tabs"
+        :key="tab.code"
+        class="flex flex-col items-center justify-center px-4 py-1 transition-all duration-200 active:scale-90"
+        :class="isActiveTab(tab.code)
+          ? 'bg-secondary-container text-on-secondary-container rounded-full'
+          : 'text-on-surface-variant hover:text-primary'"
+        @click="switchTab(tab.code)"
+      >
+        <span
+          class="text-[20px] leading-none"
+          :class="tab.icon"
+        ></span>
+        <span class="font-label-sm text-label-sm mt-0.5">{{ tab.name }}</span>
+      </button>
+    </nav>
 
     <!-- EDITOR -->
     <PopupContentEditor
