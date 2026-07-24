@@ -3,7 +3,7 @@ import uniqid from 'uniqid';
 
 import { storageCopy, optionsStorage } from '~/logic/storage'
 
-const LIMIT_STORAGE = 10100700;
+const LIMIT_STORAGE = 9 * 1024 * 1024;
 
 // only on dev mode
 if (import.meta.hot) {
@@ -144,20 +144,24 @@ const handlerCreateItem = async (message: any) => {
 
   let needRemoveFavorite = false;
 
-  if (usedSize >= LIMIT_STORAGE && autoClearEnable) {
-    // CLEARED LAST ELEMENT 
+  // Якщо досягли 8 МБ — запускаємо очищення БЕЗПЕРЕЧНО, навіть якщо галочка вимкнена!
+  if (usedSize >= LIMIT_STORAGE) {
+    if (!autoClearEnable) {
+      console.warn('[Memory Protection] 8MB hard limit reached! Forcing auto-clear to prevent crash.');
+    }
+    // Наш розумний алгоритм видалить лише найстаріші записи без зірочок і пінів
     needRemoveFavorite = autoClearOldItems(saveArray);
   }
 
   if (needRemoveFavorite) {
     Notification({
-      title: 'ERROR save copy!',
-      message: `The end storage memory limit! Please remove some favorite!`
+      title: 'STORAGE FULL (9 MB)!',
+      message: `All ephemeral history cleared! Please unpin or remove some favorites to save new items.`
     });
     return {
       data: storageCopy.value,
       size: getStringMemorySize(JSON.stringify(storageCopy.value)),
-      error: { type: 'memory', message: 'end limit memory, remove favorite!' }
+      error: { type: 'memory', message: '8MB limit reached, remove favorites!' }
     }
   }
 
@@ -333,20 +337,26 @@ onMessage('save-edit-item', async (message: any) => {
 
     let needRemoveFavorite = false;
 
-    if (usedSize >= LIMIT_STORAGE && autoClearEnable) {
-      // CLEARED LAST ELEMENT 
+    // Якщо досягли 8 МБ — запускаємо очищення БЕЗПЕРЕЧНО, навіть якщо галочка вимкнена!
+    if (usedSize >= LIMIT_STORAGE) {
+      if (!autoClearEnable) {
+        console.warn('[Memory Protection] 8MB hard limit reached! Forcing auto-clear to prevent crash.');
+      }
+      // Наш розумний алгоритм видалить лише найстаріші записи без зірочок і пінів
       needRemoveFavorite = autoClearOldItems(saveData);
     }
 
+    // Ця помилка вилетить ТІЛЬКИ в тому крайньому випадку, якщо алгоритм видалив УСЕ сміття,
+    // але розмір все одно > 8 МБ (тобто всі 8 МБ забиті виключно фаворитами і пінами)
     if (needRemoveFavorite) {
       Notification({
-        title: 'ERROR save copy!',
-        message: `The end storage memory limit! Please remove some favorite!`
+        title: 'STORAGE FULL (9 MB)!',
+        message: `All ephemeral history cleared! Please unpin or remove some favorites to save new items.`
       });
       return {
         data: storageCopy.value,
         size: getStringMemorySize(JSON.stringify(storageCopy.value)),
-        error: { type: 'memory', message: 'end limit memory, remove favorite!' }
+        error: { type: 'memory', message: '8MB limit reached, remove favorites!' }
       }
     }
 
@@ -391,36 +401,52 @@ onMessage('get-copy-data', (message) => {
   }
 })
 
-function autoClearOldItems(saveArray: any[]) {
-  let needRemoveFavorite = false;
-  const checkedArray = JSON.parse(JSON.stringify(saveArray))
-  for (let iterator = 0; iterator <= checkedArray.length; iterator += 1) {
-    if (!saveArray[iterator]) {
-      needRemoveFavorite = true;
-      break
-    }
-    const clearItems = saveArray[iterator]?.items?.filter((item: any) => item.favorite);
-    const clearedItem = {
-      ...saveArray[iterator],
-      items: clearItems
-    }
-    if (clearItems.length) {
-      saveArray.splice(iterator, 1, clearedItem);
-    } else {
-      saveArray.splice(iterator, 1);
+function autoClearOldItems(saveArray: any[]): boolean {
+  let currentSize = getStringMemorySize(JSON.stringify(saveArray));
+
+  // Крутимо цикл, поки розмір перевищує ліміт
+  while (currentSize >= LIMIT_STORAGE) {
+    let itemsRemovedInPass = 0;
+
+    // Йдемо від найстаріших днів (індекс 0 — це найстаріша дата)
+    for (let i = 0; i < saveArray.length; i++) {
+      const dayGroup = saveArray[i];
+
+      if (!dayGroup || !dayGroup.items) continue;
+
+      // Шукаємо індекс найстарішого запису, який НЕ є фаворитом і НЕ закріплений піном
+      const nonFavIdx = dayGroup.items.findIndex((item: any) => !item.favorite && !item.pin);
+
+      if (nonFavIdx !== -1) {
+        // Видаляємо РІВНО 1 старий запис
+        dayGroup.items.splice(nonFavIdx, 1);
+        itemsRemovedInPass++;
+
+        // Якщо після видалення день залишився порожнім — видаляємо сам день
+        if (dayGroup.items.length === 0) {
+          saveArray.splice(i, 1);
+          i--; // КРИТИЧНО: компенсуємо зсув індексів, щоб не пропустити наступний день!
+        }
+
+        // Видаляємо пачками по 5 штук перед перерахунком важкого JSON.stringify,
+        // щоб не вішати CPU Service Worker'а на 10 мегабайтах
+        if (itemsRemovedInPass >= 5) {
+          break;
+        }
+      }
     }
 
-    const checkedSize = getStringMemorySize(JSON.stringify(saveArray))
-    if (checkedSize < LIMIT_STORAGE) {
-      break;
+    // Якщо ми пройшли весь масив і не змогли видалити ЖОДНОГО елемента 
+    // (це означає, що всі 10 МБ забиті виключно favorites або pin)
+    if (itemsRemovedInPass === 0) {
+      return true; // needRemoveFavorite = true -> повідомляємо юзеру, що треба чистити фаворити
     }
-  
-    if (iterator === checkedArray.length - 1 && checkedSize >= LIMIT_STORAGE) {
-      needRemoveFavorite = true;
-    }
+
+    // Перевіряємо новий розмір після видалення пачки
+    currentSize = getStringMemorySize(JSON.stringify(saveArray));
   }
 
-  return needRemoveFavorite
+  return false; // Пам'ять успішно розчищено, фаворити чіпати не треба
 }
 
 function getStringMemorySize(s: string) {

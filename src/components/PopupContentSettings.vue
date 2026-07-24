@@ -101,12 +101,17 @@ function handlerChangeOptions(payload: {code: string, value: any}) {
 }
 
 .memory-size .current-size-text {
- color: #e7ab2a;
+ color: #e7ab2a !important;
  font-weight: 600;
 }
 
+.memory-size {
+ color: #ffffff;
+}
+
+
 .memory-size .max-size-text {
- color: #0d9488;
+ color: #0d9488 !important;
 }
 
 .memory-main .settings-wrapper {

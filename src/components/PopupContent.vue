@@ -197,13 +197,17 @@ const visibleCount = ref(CHUNK_SIZE);
 
 // 1. Кешуємо повний список у computed, щоб не викликати функцію в шаблоні 1000 разів
 const fullMainList = computed(() => {
-  return getCopiedMainList(detailsItems.value || [], true);
+  if (!detailsItems.value) return [];
+  // КРИТИЧНО: створюємо новий масив через [...], перш ніж віддавати його в сервіс!
+  const safeCopy = [...detailsItems.value];
+  return getCopiedMainList(safeCopy, true);
 });
 
 // 2. Рахуємо загальну кількість айтемів у всіх групах
 const totalMainItemsCount = computed(() => {
   return fullMainList.value.reduce((acc, group) => {
-    const items = getCopiedMainList(group.items, false);
+    // Тут group.items також краще розпилити, якщо getCopiedMainList їх сортує
+    const items = getCopiedMainList([...(group.items || [])], false);
     return acc + items.length;
   }, 0);
 });
@@ -217,7 +221,8 @@ const visibleMainList = computed(() => {
   for (const group of groups) {
     if (currentCount >= visibleCount.value) break;
 
-    const innerItems = getCopiedMainList(group.items, false);
+    // КРИТИЧНО: знову передаємо копію масиву [...group.items]
+    const innerItems = getCopiedMainList([...(group.items || [])], false);
     const remainingSlots = visibleCount.value - currentCount;
 
     if (innerItems.length <= remainingSlots) {
@@ -227,7 +232,6 @@ const visibleMainList = computed(() => {
       });
       currentCount += innerItems.length;
     } else {
-      // Якщо група велика — беремо лише частину її айтемів
       result.push({
         ...group,
         renderedItems: innerItems.slice(0, remainingSlots)

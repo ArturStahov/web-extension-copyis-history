@@ -66,6 +66,10 @@ onMounted(() => {
   font-weight: 600 !important;
 }
 
+.recommendation-list {
+  color: #ffffff !important;
+}
+
 .help-screen .help-screen__section-title {
   margin-top: 0;
   margin-bottom: 5px;
