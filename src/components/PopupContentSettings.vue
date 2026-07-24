@@ -75,7 +75,7 @@ function handlerChangeOptions(payload: {code: string, value: any}) {
   <div class="memory-main">
     <p class="section-title text title"> Memory </p>
     <p class="memory-size text">Current usage: <span class="current-size-text">{{`${sizeStorage}`}}</span> /
-      <span class="max-size-text">10100700</span> bytes
+      <span class="max-size-text">9100700</span> bytes
     </p>
     <div v-if="init" class="settings-wrapper">
       <p class="section-title text title"> Settings </p>
