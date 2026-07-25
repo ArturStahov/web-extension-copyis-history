@@ -112,6 +112,49 @@ export default defineConfig({
   preflights: [
     {
       getCSS: () => `
+         :host,
+        html,
+        body,
+        #app {
+          /* Скидаємо успадковане сміття для Shadow DOM */
+          all: initial !important;
+          display: block !important;
+
+          /* Жорстко фіксуємо базову типографію, щоб чужі сайти (Jira/Gmail) не ламали текст */
+          font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+          font-size: 14px !important;
+          line-height: 1.5 !important;
+          color: #dae2fd !important; /* on-surface з твоєї теми */
+          color-scheme: dark !important;
+          background-color: #0b1326 !important; /* surface / background з твоєї теми */
+          text-align: left !important;
+          box-sizing: border-box !important;
+        }
+
+        /* Global button reset */
+        button {
+          background: none;
+          border: none;
+          padding: 0;
+          margin: 0;
+          font: inherit;
+          color: inherit;
+          cursor: pointer;
+          outline: none;
+          box-shadow: none;
+        }
+
+        /* Примусово змушуємо всі дочірні елементи успадковувати НАШ чистий line-height */
+        :host *,
+        :host *::before,
+        :host *::after,
+        #app *,
+        #app *::before,
+        #app *::after {
+          line-height: inherit;
+          box-sizing: inherit !important;
+        }
+        
         /* Глобальний ресет для Firefox */
         * {
           scrollbar-width: thin;
